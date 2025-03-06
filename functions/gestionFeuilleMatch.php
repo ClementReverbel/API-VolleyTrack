@@ -1,72 +1,91 @@
 <?php
     include "gestionJoueurs.php";
     include "gestionMatchs.php";
-    function ajouterFeuilleMatch($linkpdo,$idMatch,$listeidjoueur,$listerole){
-        $joueursActif=getJoueurActif($linkpdo);
+    
+    function validerDonneesFeuilleMatch($idJoueurs, $roles) {
+        //Vérification du nombre de joueurs
+        if (count($idJoueurs) < 6) {
+            return "Veuillez sélectionner au moins 6 joueurs.";
+        }
+        if (count($idJoueurs) > 12) {
+            return "Vous ne pouvez pas sélectionner plus de 12 joueurs.";
+        }
+        //Vérification de la non-sélection de joueurs identiques
+        if (count($idJoueurs) !== count(array_unique($idJoueurs))) {
+            return "Un joueur ne peut pas être sélectionné deux fois.";
+        }
+        //Vérification que le nombre de rôles correspond au nombre de joueurs
+        if (sizeof($roles) != sizeof($idJoueurs)) {
+            return "Il faut attribuer un rôle à chaque joueur (ni plus ni moins)";
+        }
+        return '';
+    }
 
+    function verifierJoueursActifs($idJoueurs, $joueursActif) {
+        //Créer la liste des id des joueurs actifs
+        $listeidactif = array();
+        foreach($joueursActif as $joueur) {
+            array_push($listeidactif, $joueur['idJoueur']);
+        }
+        //Vérification que les joueurs sélectionnés sont actifs
+        foreach($idJoueurs as $idJoueur) {
+            if(!in_array($idJoueur, $listeidactif)) {
+                return "Les joueurs sélectionnés doivent existés et être actifs";
+            }
+        }
+        return '';
+    }
+
+    function insererFeuilleMatch($linkpdo, $idJoueurs, $roles, $idMatch) {
+        try {
+            $requete = $linkpdo->prepare("
+                INSERT INTO participer (idJoueur, idMatch, Role_titulaire, Poste)
+                VALUES (:idJoueur, :idMatch, :Role_titulaire, :Poste)
+            ");
+            //Pour chaque joueur, je vérifie si il est titulaire
+            for($i = 0; $i < sizeof($idJoueurs); $i++) {
+                $idJoueur = $idJoueurs[$i];
+                $role = $roles[$i];
+                $roleTitulaire = ($role != 5);
+
+                $requete->execute([
+                    ':idJoueur' => $idJoueur,
+                    ':idMatch' => $idMatch,
+                    ':Role_titulaire' => $roleTitulaire,
+                    ':Poste' => $role
+                ]);
+            }
+            return true;
+        } catch (Exception $e) {
+            return "Erreur lors de l'enregistrement : " . $e->getMessage();
+        }
+    }
+
+    function ajouterFeuilleMatch($linkpdo, $idMatch, $listeidjoueur, $listerole) {
+        $joueursActif = getJoueurActif($linkpdo);
         $message = '';
-
-        $dateHeureMatch=getDateMatch($linkpdo,$idMatch);
+        $dateHeureMatch = getDateMatch($linkpdo, $idMatch);
 
         $joueurs = !empty($listeidjoueur) ? array_filter($listeidjoueur) : [];
         $roles = !empty($listerole) ? $listerole : [];
 
         // Vérifications des données
-        if (count($joueurs) < 6) {
-            $message = "Veuillez sélectionner au moins 6 joueurs.";
-        } elseif (count($joueurs) > 12) {
-            $message = "Vous ne pouvez pas sélectionner plus de 12 joueurs.";
-        } elseif (count($joueurs) !== count(array_unique($joueurs))) {
-            $message = "Un joueur ne peut pas être sélectionné deux fois.";
-        } elseif (sizeof($roles)!=sizeof($joueurs)) {
-            $message = "Il faut attribuer un rôle à chaque joueur (ni plus ni moins)";
-        } else {
-            $listeidactif=array();
-            foreach($joueursActif as $joueur){
-                array_push($listeidactif,$joueur['idJoueur']);
-            }
-            foreach($joueurs as $joueur){
-                if(!in_array($joueur,$listeidactif)){
-                    $message="Les joueurs sélectionnés doivent existés et être actifs";
-                    break;
-                }
-            }
+        $message = validerDonneesFeuilleMatch($joueurs, $roles);
+        
+        if (empty($message)) {
+            $message = verifierJoueursActifs($joueurs, $joueursActif);
         }
 
         // Si tout est valide, insérer dans la base de données
         if (empty($message)) {
-            try {
-                $requete = $linkpdo->prepare("
-                    INSERT INTO participer (idJoueur, idMatch, Role_titulaire, Poste)
-                    VALUES (:idJoueur, :idMatch, :Role_titulaire, :Poste)
-                ");
-
-                for($i=0;$i<sizeof($joueurs);$i++){
-                    $idJoueur=$joueurs[$i];
-                    $role=$roles[$i];
-
-                    //Les rôles seront associés de cette manière :
-                    /*
-                    1 - Attaquant
-                    2 - Centre
-                    3 - Passeur
-                    4 - Libero
-                    5 - Remplaçant
-                    */
-
-                    $roleTitulaire=($role!=5);
-
-                    $requete->execute([
-                        ':idJoueur' => $idJoueur,
-                        ':idMatch' => $idMatch,
-                        ':Role_titulaire' => $roleTitulaire,
-                        ':Poste' => $role
-                    ]);
-                }
+            $resultat = insererFeuilleMatch($linkpdo, $joueurs, $roles, $idMatch);
+            if ($resultat === true) {
                 $message = "Sélection des joueurs enregistrée avec succès pour le match du ". $dateHeureMatch['Date_heure_match'].".";
-            } catch (Exception $e) {
-                $message = "Erreur lors de l'enregistrement : " . $e->getMessage();
+            } else {
+                $message = "Erreur lors de l'enregistrement : " + $message;
             }
         }
+
+        return $message;
     }
 ?>
