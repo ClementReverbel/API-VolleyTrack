@@ -1,22 +1,4 @@
 <?php
-session_start();
-if (!isset($_SESSION["login"])) {
-    echo "<p>Vous devez vous connecter d'abord</p>";
-    echo "<a href='../index.php'>Lien vers la page de connexion</a>";
-    exit;
-}
-
-if (!isset($_GET['id_match'])) {
-    echo "<p>Veuillez d'abord sélectionner un match.</p>";
-    echo "<a href='feuille_match.php'>Retour au choix des matchs</a>";
-    exit;
-}
-
-try {
-    $linkpdo = new PDO("mysql:host=mysql-volleytrack.alwaysdata.net;dbname=volleytrack_bd", "385425", "\$iutinfo");
-} catch (Exception $e) {
-    die("Erreur de connexion à la base de données : " . $e->getMessage());
-}
 
 $idMatch = $_GET['id_match'];
 $message = '';
