@@ -51,6 +51,17 @@
                     $idJoueur=$joueurs[$i];
                     $role=$roles[$i];
 
+                    //Les rôles seront associés de cette manière :
+                    /*
+                    1 - Attaquant
+                    2 - Centre
+                    3 - Passeur
+                    4 - Libero
+                    5 - Remplaçant
+                    */
+
+                    $roleTitulaire=($role!=5);
+
                     $requete->execute([
                         ':idJoueur' => $idJoueur,
                         ':idMatch' => $idMatch,
