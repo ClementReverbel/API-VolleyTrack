@@ -1,18 +1,12 @@
 <?php
     include "gestionJoueurs.php";
-
+    include "gestionMatchs.php";
     function ajouterFeuilleMatch($linkpdo,$idMatch,$listeidjoueur,$listerole){
         $joueursActif=getJoueurActif($linkpdo);
 
         $message = '';
 
-        $requeteDateMatch = $linkpdo->prepare("
-            SELECT Date_heure_match
-            FROM matchs
-            WHERE id_match = :id;
-        ");
-        $requeteDateMatch -> execute(array("id" => $idMatch));
-        $dateHeureMatch = $requeteDateMatch->fetch(); 
+        $dateHeureMatch=getDateMatch($linkpdo,$idMatch);
 
         $joueurs = !empty($listeidjoueur) ? array_filter($listeidjoueur) : [];
         $roles = !empty($listerole) ? $listerole : [];
