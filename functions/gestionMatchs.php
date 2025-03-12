@@ -80,12 +80,16 @@
     //                      Méthode PUT - Modification d'un match
     //###########################################################################################################################
 
-    function updateMatch($linkpdo, $idMatch, $date, $heure, $equipeadv, $domicile){
-        
+    //Modifie un match avec sont id et tous les paramètres necessaires (date, heure, equipe adverse, domicile, resultat)
+    function updateMatch($linkpdo, $idMatch, $date, $heure, $equipeadv, $domicile, $resultat){
+        $requete = $linkpdo->prepare('UPDATE matchs SET Date_heure_match = :date_time, Nom_equipe_adverse = :equipeadv, Rencontre_domicile = :domicile , Resultat = :resultat WHERE id_match = :id');
+        $date_time = ($date.' '.$heure.':00');
+        $requete->execute(array('date_time'=>$date_time,'equipeadv'=>$equipeadv,
+        'domicile'=>$domicile, 'id'=>$idMatch, 'resultat'=>$resultat));
     }
 
     //###########################################################################################################################
-    //                      Méthode POST - Insertion d'un match
+    //                      Méthode POST - Création d'un match
     //###########################################################################################################################
 
       //Ajoute un match à la base de données
@@ -99,4 +103,27 @@
         $requete->execute(array('date_time'=>$date_time,'equipeadv'=>$equipeadv,
         'domicile'=>$domicile));
     }
+
+    function updateScore($linkpdo, $idMatch, $score){
+        $requete = $linkpdo->prepare('UPDATE matchs SET Score = :score , Resultat = :resultat WHERE id_match = :id');
+        
+        $sets = explode(',', $score);
+        $sets_gagnes = 0;
+        
+        // Compter les sets gagnés
+        foreach ($sets as $set) {
+            $scores_set = explode('-', trim($set));
+            if (count($scores_set) === 2) {
+                if (intval($scores_set[0]) > intval($scores_set[1])) {
+                    $sets_gagnes++;
+                }
+            }
+        }
+        
+        // Déterminer si le match est gagné (3 sets ou plus)
+        $resultat = ($sets_gagnes >= 3) ? 1 : 0;
+        
+        $requete->execute(array('score'=>$score, 'id'=>$idMatch, 'resultat'=>$resultat));
+    }
+
 ?>
