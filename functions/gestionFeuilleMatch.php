@@ -43,6 +43,10 @@
         return '';
     }
 
+    //###########################################################################################################################
+    //                      Méthode Get - Récupérer les joueurs d'un match donné
+    //###########################################################################################################################
+
     function getJoueursSelectionnesAUnMatch($linkpdo,$idMatch){
         // Récupérer les joueurs déjà sélectionnés pour ce match
         $requeteJoueursSelectionnes = $linkpdo->prepare("
@@ -127,17 +131,69 @@
     //                  Méthode PUT - Modification d'une feuille de match
     //###########################################################################################################################
 
+
+    //Modifie la place d'un joueur donné dans un feuille de match 
+    function miseAJourFeuilleMatch($linkpdo, $idMatch, $joueurs, $roles, $notes,$joueursAvantModif){
+        try {
+            $requeteUpdate = $linkpdo->prepare("
+                UPDATE participer set idJoueur=:idJoueur, Role_titulaire=:Role_titulaire, Poste=:Poste, Note=:Note)
+                WHERE idMatch=:idMatch
+            ");
+
+            $requeteInsert = $linkpdo->prepare("
+                INSERT INTO participer (idJoueur, idMatch, Role_titulaire, Poste, Note)
+                VALUES (:idJoueur, :idMatch, :Role_titulaire, :Poste, :Note)
+            ");
+
+            for($i = 0; $i < sizeof($joueurs); $i++) {
+                $idJoueur = $joueurs[$i];
+                $role = $roles[$i];
+                $roleTitulaire = ($role != 5);
+
+                if(in_array($joueurs[$i],$joueursAvantModif)){
+                    $requeteUpdate->execute([
+                        ':idJoueur' => $idJoueur,
+                        ':idMatch' => $idMatch,
+                        ':Role_titulaire' => $roleTitulaire,
+                        ':Poste' => $role,
+                        ':Note' => $notes[$i]
+                    ]);
+                } else {
+                    if (sizeof($joueurs)<=sizeof($joueursAvantModif)){
+
+                    } else {
+                        $requeteInsert->execute([
+                            ':idJoueur' => $idJoueur,
+                            ':idMatch' => $idMatch,
+                            ':Role_titulaire' => $roleTitulaire,
+                            ':Poste' => $role,
+                            ':Note' => $notes[$i]
+                        ]);
+                    }
+                }
+            }        
+            return true; 
+        }catch (Exception $e) {
+            return "Erreur lors de l'enregistrement : " . $e->getMessage();
+        }
+    }
+
     //Fonction a appeler pour modifier une feuille de matchs avec des joueurs et roles donnés
-    function modifierFeuilleMatch($linkpdo, $idMatch, $listeidjoueur, $listerole){
+    function modifierFeuilleMatch($linkpdo, $idMatch, $listeidjoueur, $listerole, $listenote){
         $message = '';
         $joueursActif = getJoueurActif($linkpdo);
         $dateHeureMatch = getDateMatch($linkpdo, $idMatch);
 
         $joueurs = !empty($listeidjoueur) ? array_filter($listeidjoueur) : [];
         $roles = !empty($listerole) ? $listerole : [];
+        $notes = !empty($listenote) ? $listenote : [];
 
         // Vérifications des données
         $message = validerDonneesFeuilleMatch($joueurs, $roles);
+
+        if (!(sizeof($joueurs)==sizeof($roles)==sizeof($notes))){
+            $message= "Erreur, le nombre de joueurs/roles/notes ne correspond pas";
+        }
         
         if (empty($message)) {
             $message = verifierJoueursActifs($joueurs, $joueursActif);
@@ -147,29 +203,12 @@
 
         // Si tout est valide, mettre à jour la base de données
         if (empty($message)) {
-                // Supprimer les anciens enregistrements pour ce match
-                $linkpdo->prepare("DELETE FROM participer WHERE idMatch = :idMatch")
-                    ->execute([':idMatch' => $idMatch]);
-
-                // Insérer les nouvelles données
-                $requete = $linkpdo->prepare("
-                    INSERT INTO participer (idJoueur, idMatch, Role_titulaire, Poste)
-                    VALUES (:idJoueur, :idMatch, :Role_titulaire, :Poste)
-                ");
-
-                foreach ($joueurs as $idJoueur) {
-                    $role = $roles[$idJoueur];
-                    $roleTitulaire = ($role !== 'Remplaçant') ? 1 : 0;
-
-                    $requete->execute([
-                        ':idJoueur' => $idJoueur,
-                        ':idMatch' => $idMatch,
-                        ':Role_titulaire' => $roleTitulaire,
-                        ':Poste' => $role
-                    ]);
-                }
-
+            $res=miseAJourFeuilleMatch($linkpdo,$idMatch,$joueurs,$roles,$notes,$joueursAvantModif);
+            if ($res){
                 $message = "Modification des joueurs enregistrée avec succès pour le match du ". $dateHeureMatch['Date_heure_match'].".";
+            } else {
+                $message = "Erreur lors de l'enregistrement : " + $message;
+            }
         }
     }
 ?>
