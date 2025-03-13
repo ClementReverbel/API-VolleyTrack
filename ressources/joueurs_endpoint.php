@@ -46,9 +46,9 @@
                             $data['prenom'], $data['date_de_naissance'], $data['taille'], 
                             $data['poids'], $data['commentaire']);
                             if($response){
-                                deliver_response(201, "Joueur créé avec succès", $joueur);
+                                deliver_response(201, "Joueur créé avec succès");
                             } else {
-                                deliver_response(201, "Mauvaise date", $joueur);
+                                deliver_response(201, "Mauvaise date");
                             }
                         } else {
                             deliver_response(400, "La taille et le poids doivent être numérique");
