@@ -35,16 +35,20 @@
                 }
                 break;
             case "POST" :
-                if(isset($_POST['date']) && isset($_POST['heure']) && isset($_POST['equipeadv']) && isset($_POST['domicile'])){
-                    ajouterMatch($linkpdo, $_POST['date'], $_POST['heure'], $_POST['equipeadv'], $_POST['domicile']);
+                $postedData = file_get_contents('php://input');
+                $data = json_decode($postedData,true);
+                if(isset($data['date']) && isset($data['heure']) && isset($data['equipeadv']) && isset($data['domicile'])){
+                    ajouterMatch($linkpdo, $data['date'], $data['heure'], $data['equipeadv'], $data['domicile']);
                     deliver_response(201, "Match ajouté avec succès");
                 } else {
                     deliver_response(400, "La date, l'heure, l'équipe adverse et le lieu du match sont requis");
                 }
                 break;
             case "PUT" :
-                if(isset($_POST['id']) && isset($_POST['date']) && isset($_POST['heure']) && isset($_POST['equipeadv']) && isset($_POST['domicile']) && isset($_POST['score'])){
-                    updateMatch($linkpdo, $_POST['id'], $_POST['date'], $_POST['heure'], $_POST['equipeadv'], $_POST['domicile'], $_POST['score']);
+                $postedData = file_get_contents('php://input');
+                $data = json_decode($postedData,true);
+                if(isset($data['id']) && isset($data['date']) && isset($data['heure']) && isset($data['equipeadv']) && isset($data['domicile']) && isset($data['score'])){
+                    updateMatch($linkpdo, $data['id'], $data['date'], $data['heure'], $data['equipeadv'], $data['domicile'], $data['score']);
                     deliver_response(200, "Match modifié avec succès");
                 } else {
                     deliver_response(400, "L'id, la date, l'heure, l'équipe adverse, le lieu du match et le score sont requis");

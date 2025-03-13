@@ -32,15 +32,17 @@
                 break;
             
             case "POST" :
+                $postedData = file_get_contents('php://input');
+                $data = json_decode($postedData,true);
                 // Création d'un nouveau joueur
-                if(isset($_POST['numLic']) && isset($_POST['nom']) && 
-                isset($_POST['prenom']) && isset($_POST['date_de_naissance']) && 
-                isset($_POST['taille']) && isset($_POST['poids']) && isset($_POST['commentaire'])){
+                if(isset($data['numLic']) && isset($data['nom']) && 
+                isset($data['prenom']) && isset($data['date_de_naissance']) && 
+                isset($data['taille']) && isset($data['poids']) && isset($data['commentaire'])){
                     //Si le numéro de licence est présent, on vérifie si il est valide
-                    if(numLicValide($_POST['numLic'])){
-                        $joueur = createJoueur($linkpdo, $_POST['numLic'], $_POST['nom'], 
-                        $_POST['prenom'], $_POST['date_de_naissance'], $_POST['taille'], 
-                        $_POST['poids'], $_POST['commentaire']);
+                    if(numLicValide($data['numLic'])){
+                        $joueur = createJoueur($linkpdo, $data['numLic'], $data['nom'], 
+                        $data['prenom'], $data['date_de_naissance'], $data['taille'], 
+                        $data['poids'], $data['commentaire']);
                         deliver_response(201, "Joueur créé avec succès", $joueur);
                     } else {
                         //Si le numéro de licence ne fait pas 10 caractères, on renvoie une erreur
@@ -53,14 +55,16 @@
                 break;
             
             case "PUT" :
+                $postedData = file_get_contents('php://input');
+                $data = json_decode($postedData,true);
                 // Modification d'un joueur existant
-                if(isset($_POST['numLic']) && isset($_POST['nom']) && isset($_POST['prenom']) && 
-                    isset($_POST['date_de_naissance']) && isset($_POST['taille']) && 
-                    isset($_POST['poids']) && isset($_POST['commentaire']) && isset($_POST['statut'])){
+                if(isset($data['numLic']) && isset($data['nom']) && isset($data['prenom']) && 
+                    isset($data['date_de_naissance']) && isset($data['taille']) && 
+                    isset($data['poids']) && isset($data['commentaire']) && isset($data['statut'])){
                     //Si le numéro de licence est présent, on vérifie si il est valide
-                    if(numLicValide($_POST['numLic'])){
-                        $joueur = updateJoueur($linkpdo, $_POST['numLic'], $_POST['nom'], $_POST['prenom'], 
-                        $_POST['date_de_naissance'], $_POST['taille'], $_POST['poids'], $_POST['commentaire'], $_POST['statut']);
+                    if(numLicValide($data['numLic'])){
+                        $joueur = updateJoueur($linkpdo, $data['numLic'], $data['nom'], $data['prenom'], 
+                        $data['date_de_naissance'], $data['taille'], $data['poids'], $data['commentaire'], $data['statut']);
                         deliver_response(200, "Joueur modifié avec succès", $joueur);
                     } else {
                         //Si le numéro de licence ne fait pas 10 caractères, on renvoie une erreur
@@ -73,10 +77,12 @@
                 break;
             
             case "DELETE" :
+                $postedData = file_get_contents('php://input');
+                $data = json_decode($postedData,true);
                 // Suppression d'un joueur existant
-                if(isset($_POST['numLic'])){
+                if(isset($data['numLic'])){
                     //Si le numéro de licence est présent, on vérifie si le joueur a participé à un match
-                    $joueur = deleteJoueur($linkpdo, $_POST['numLic']);
+                    $joueur = deleteJoueur($linkpdo, $data['numLic']);
                     if($joueur){
                         //Si le joueur n'a participé à aucun match, on le supprime
                         deliver_response(200, "Joueur supprimé avec succès");
