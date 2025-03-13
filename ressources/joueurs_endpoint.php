@@ -20,6 +20,10 @@
                         //Si le numéro de licence ne fait pas 10 caractères, on renvoie une erreur
                         deliver_response(400, "Le numéro de licence est doit contenir 10 caractères");
                     }
+                } elseif(isset($_GET['actif'])){
+                    // Sinon on récupère tous les joueurs actifs
+                    $joueurs = getJoueurActif($linkpdo);
+                    deliver_response(200, "Liste des joueurs actifs récupérée avec succès", $joueurs);
                 } else {
                     // Sinon on récupère tous les joueurs
                     $joueurs = getAllJoueur($linkpdo);
