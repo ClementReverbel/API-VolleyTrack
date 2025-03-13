@@ -38,8 +38,11 @@
                 $postedData = file_get_contents('php://input');
                 $data = json_decode($postedData,true);
                 if(isset($data['date']) && isset($data['heure']) && isset($data['equipeadv']) && isset($data['domicile'])){
-                    ajouterMatch($linkpdo, $data['date'], $data['heure'], $data['equipeadv'], $data['domicile']);
-                    deliver_response(201, "Match ajouté avec succès");
+                    if(ajouterMatch($linkpdo, $data['date'], $data['heure'], $data['equipeadv'], $data['domicile'])){
+                        deliver_response(201, "Match ajouté avec succès");
+                    } else {
+                        deliver_response(400, "La date ou l'heure n'a pas un format valide");
+                    }
                 } else {
                     deliver_response(400, "La date, l'heure, l'équipe adverse et le lieu du match sont requis");
                 }

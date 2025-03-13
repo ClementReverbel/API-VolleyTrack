@@ -161,6 +161,7 @@
                     //liaison du formulaire à la requete SQL
                     $requete->execute(array('date_time'=>$date_time,'equipeadv'=>$equipeadv,
                     'domicile'=>$domicile));
+                    return true;
             } else {
                 return false;
             }
