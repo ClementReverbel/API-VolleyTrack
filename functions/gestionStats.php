@@ -28,7 +28,7 @@
     }
 
     function getStatJoueur($linkpdo){
-        return $linkpdo->query("
+        $requete = $linkpdo->prepare("
                         SELECT 
                             j.idJoueur,
                             j.Nom,
@@ -66,13 +66,15 @@
                         FROM joueurs AS j
                         GROUP BY j.idJoueur
                     ");
+        $requete->execute();
+        return $requete->fetchAll(PDO::FETCH_ASSOC);
     }
 
     function getSelectionsConsecutives($linkpdo){
         $joueurs=getStatJoueur($linkpdo);
         // Calcul des sélections consécutives
         $selectionsConsecutives = [];
-        while ($joueur = $joueurs->fetch(PDO::FETCH_ASSOC)) {
+        foreach($joueurs as $joueur) {
             $idJoueur = $joueur['idJoueur'];
         
             // Récupérer les dates des matchs triées pour ce joueur
@@ -116,7 +118,11 @@
         $selectionsConsecutives = getSelectionsConsecutives($linkpdo);
         //Ajoute les sélections consécutives grâce à l'id du joueur
         foreach($selectionsConsecutives as $idjoueur => $selections_j){
-            $data[$idjoueur]['selections_consecutives'] = $selections_j;
+            for($i=0; $i<count($data); $i++){
+                if($data[$i]['idJoueur'] == $idjoueur){
+                    $data[$i]['selections_consecutives'] = $selections_j;
+                }
+            }
         }
         return $data;
     }
