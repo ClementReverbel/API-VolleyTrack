@@ -29,10 +29,38 @@
                 }
                 break;
             case "POST" :
-                //a remplir
+                if(isset($_POST['id']) && isset($_POST['liste_joueurs']) && isset($_POST['liste_roles'])){
+                    $response=ajouterFeuilleMatch($linkpdo,$_POST['id'],$_POST['liste_joueurs'],$_POST['liste_roles']);
+                    //Vérifie si la fonction renvoie un message d'erreur ou non
+                    if (str_contains($response,"Erreur")){
+                        if(str_contains($response,"enregistrement")){
+                            deliver_response(500,$response);
+                        } else {
+                            deliver_response(400,$response);
+                        }
+                    }else{
+                        deliver_response(200,$response);
+                    }
+                } else {
+                    deliver_response(400, "L'id du match, la liste des id des jouers, la liste des roles sont requis");
+                }
                 break;
             case "PUT" :
-                //a remplir
+                if(isset($_POST['id']) && isset($_POST['liste_joueurs']) && isset($_POST['liste_roles']) && isset($_POST['liste_notes'])){
+                    $response=modifierFeuilleMatch($linkpdo,$_POST['id'],$_POST['liste_joueurs'],$_POST['liste_roles'],$_POST['liste_notes']);
+                    //Vérifie si la fonction renvoie un message d'erreur ou non
+                    if (str_contains($response,"Erreur")){
+                        if(str_contains($response,"enregistrement")){
+                            deliver_response(500,$response);
+                        } else {
+                            deliver_response(400,$response);
+                        }
+                    }else{
+                        deliver_response(200,$response);
+                    }
+                } else {
+                    deliver_response(400, "L'id du match, la liste des id des jouers, la liste des roles et la liste des notes sont requis");
+                }
                 break;
         }
     } else {

@@ -10,18 +10,18 @@
     function validerDonneesFeuilleMatch($idJoueurs, $roles) {
         //Vérification du nombre de joueurs
         if (count($idJoueurs) < 6) {
-            return "Veuillez sélectionner au moins 6 joueurs.";
+            return "Erreur, veuillez sélectionner au moins 6 joueurs.";
         }
         if (count($idJoueurs) > 12) {
-            return "Vous ne pouvez pas sélectionner plus de 12 joueurs.";
+            return "Erreur, vous ne pouvez pas sélectionner plus de 12 joueurs.";
         }
         //Vérification de la non-sélection de joueurs identiques
         if (count($idJoueurs) !== count(array_unique($idJoueurs))) {
-            return "Un joueur ne peut pas être sélectionné deux fois.";
+            return "Erreur, un joueur ne peut pas être sélectionné deux fois.";
         }
         //Vérification que le nombre de rôles correspond au nombre de joueurs
         if (sizeof($roles) != sizeof($idJoueurs)) {
-            return "Il faut attribuer un rôle à chaque joueur (ni plus ni moins)";
+            return "Erreur, il faut attribuer un rôle à chaque joueur (ni plus ni moins)";
         }
         return '';
     }
@@ -37,7 +37,7 @@
         //Vérification que les joueurs sélectionnés sont actifs
         foreach($idJoueurs as $idJoueur) {
             if(!in_array($idJoueur, $listeidactif)) {
-                return "Les joueurs sélectionnés doivent existés et être actifs";
+                return "Erreur, les joueurs sélectionnés doivent existés et être actifs";
             }
         }
         return '';
@@ -120,7 +120,7 @@
             if ($resultat === true) {
                 $message = "Sélection des joueurs enregistrée avec succès pour le match du ". $dateHeureMatch['Date_heure_match'].".";
             } else {
-                $message = "Erreur lors de l'enregistrement : " + $message;
+                $message = "Erreur lors de l'enregistrement" ;
             }
         }
 
@@ -230,8 +230,9 @@
             if ($res){
                 $message = "Modification des joueurs enregistrée avec succès pour le match du ". $dateHeureMatch['Date_heure_match'].".";
             } else {
-                $message = "Erreur lors de l'enregistrement : " + $message;
+                $message = "Erreur lors de l'enregistrement";
             }
         }
+        return $message;
     }
 ?>
