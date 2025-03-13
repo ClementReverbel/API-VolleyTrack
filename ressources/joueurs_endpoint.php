@@ -40,17 +40,25 @@
                 isset($data['taille']) && isset($data['poids']) && isset($data['commentaire'])){
                     //Si le numéro de licence est présent, on vérifie si il est valide
                     if(numLicValide($data['numLic'])){
-                        $joueur = createJoueur($linkpdo, $data['numLic'], $data['nom'], 
-                        $data['prenom'], $data['date_de_naissance'], $data['taille'], 
-                        $data['poids'], $data['commentaire']);
-                        deliver_response(201, "Joueur créé avec succès", $joueur);
+                        //Vérifie si la taille et le poids sont des chiffres
+                        if(is_numeric($data['taille'])&&is_numeric($data['poids'])){
+                            $response = createJoueur($linkpdo, $data['numLic'], $data['nom'], 
+                            $data['prenom'], $data['date_de_naissance'], $data['taille'], 
+                            $data['poids'], $data['commentaire']);
+                            if($response){
+                                deliver_response(201, "Joueur créé avec succès", $joueur);
+                            } else {
+                                deliver_response(201, "Mauvaise date", $joueur);
+                            }
+                        } else {
+                            deliver_response(400, "La taille et le poids doivent être numérique");
+                        }
                     } else {
                         //Si le numéro de licence ne fait pas 10 caractères, on renvoie une erreur
                         deliver_response(400, "Le numéro de licence est doit contenir 10 caractères");
                     }
                 } else {
-                    deliver_response(400, "Le numéro de licence, le nom, le prénom, la date de naissance, 
-                    la taille, le poids et le commentaire sont requis pour créer un joueur");
+                    deliver_response(400, "Le numéro de licence, le nom, le prénom, la date de naissance, la taille, le poids et le commentaire sont requis pour créer un joueur");
                 }
                 break;
             
@@ -71,8 +79,7 @@
                         deliver_response(400, "Le numéro de licence est doit contenir 10 caractères");
                     }
                 } else {
-                    deliver_response(400, "Le numéro de licence, le nom, le prénom, la date de naissance,
-                                        la taille, le poids, le commentaire et le statut sont requis pour modifier un joueur");
+                    deliver_response(400, "Le numéro de licence, le nom, le prénom, la date de naissance, la taille, le poids, le commentaire et le statut sont requis pour modifier un joueur");
                 }
                 break;
             

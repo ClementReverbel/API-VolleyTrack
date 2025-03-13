@@ -92,8 +92,16 @@
 
     //Crée un joueur
     function createJoueur($linkpdo, $numLic, $nom, $prenom, $date_de_naissance, $taille, $poids, $commentaire,){
-        $requete = $linkpdo->prepare('INSERT INTO joueurs(Numéro_de_licence,Nom,Prenom,Date_de_naissance ,Taille,Poids,Commentaire,Statut)
-                VALUES (:num,:Nom,:Prenom,:Date_de_naissance ,:Taille, :Poids,:Commentaire,:Statut)');
-        $requete->execute(array('num' => $numLic, 'Nom' => $nom, 'Prenom' => $prenom, 'Date_de_naissance' => $date_de_naissance, 'Taille' => $taille, 'Poids' => $poids, 'Commentaire' => $commentaire, 'Statut' => 'Actif'));
+        $date_explode = explode('-', $date_de_naissance);
+        if(checkdate($date_explode[1], $date_explode[0] , $date_explode[2])){
+            $date_dateTime= $date_explode[2] . '-' . $date_explode[1] . '-' . $date_explode[0];
+
+            $requete = $linkpdo->prepare('INSERT INTO joueurs(Numéro_de_licence,Nom,Prenom,Date_de_naissance ,Taille,Poids,Commentaire,Statut)
+                    VALUES (:num,:Nom,:Prenom,:Date_de_naissance ,:Taille, :Poids,:Commentaire,:Statut)');
+            $requete->execute(array('num' => $numLic, 'Nom' => $nom, 'Prenom' => $prenom, 'Date_de_naissance' => $date_dateTime, 'Taille' => $taille, 'Poids' => $poids, 'Commentaire' => $commentaire, 'Statut' => 'Actif'));
+            return true;
+        } else {        
+            return false;
+        }
     }
 ?>
