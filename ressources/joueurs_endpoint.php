@@ -21,9 +21,9 @@
                         deliver_response(400, "Le numéro de licence est doit contenir 10 caractères");
                     }
                 } else {
-                    // Sinon on récupère tous les joueurs actifs
+                    // Sinon on récupère tous les joueurs
                     $joueurs = getAllJoueur($linkpdo);
-                    deliver_response(200, "Liste des joueurs actifs récupérée avec succès", $joueurs);
+                    deliver_response(200, "Liste des joueurs récupérée avec succès", $joueurs);
                 }
                 break;
             
