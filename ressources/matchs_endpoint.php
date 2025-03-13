@@ -41,7 +41,7 @@
                     if(ajouterMatch($linkpdo, $data['date'], $data['heure'], $data['equipeadv'], $data['domicile'])){
                         deliver_response(201, "Match ajouté avec succès");
                     } else {
-                        deliver_response(400, "La date ou l'heure n'a pas un format valide");
+                        deliver_response(400, "La date, l'heure ou le lieu du match n'a pas un format valide");
                     }
                 } else {
                     deliver_response(400, "La date, l'heure, l'équipe adverse et le lieu du match sont requis");
