@@ -15,14 +15,14 @@
                     //Vérifie si l'ID est numérique (pas de texte)
                     if (!is_numeric($id)){
                         deliver_response(422, "L'ID doit être numérique");
-                    }
-
-                    $match = getOneMatch($linkpdo, $id);
-                    //On vérifie s'il y a des données dans la réponse de la fonction
-                    if (empty($match)){
-                        deliver_response(404, "Aucun match n'est associé à l'ID");
                     } else {
-                        deliver_response(200, "Match récupéré avec succès", $match);
+                        $match = getOneMatch($linkpdo, $id);
+                        //On vérifie s'il y a des données dans la réponse de la fonction
+                        if (empty($match)){
+                            deliver_response(404, "Aucun match n'est associé à l'ID");
+                        } else {
+                            deliver_response(200, "Match récupéré avec succès", $match);
+                        }
                     }
                 } else {
                     $matchs = getAllMatchs($linkpdo);
