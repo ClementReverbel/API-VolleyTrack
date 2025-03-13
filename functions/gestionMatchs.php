@@ -144,13 +144,16 @@
     //                      Méthode POST - Création d'un match
     //###########################################################################################################################
 
-      //Ajoute un match à la base de données
-      function ajouterMatch($linkpdo, $date, $heure, $equipeadv, $domicile){
+    //Ajoute un match à la base de données
+    function ajouterMatch($linkpdo, $date, $heure, $equipeadv, $domicile){
         //Insertion du nouveau match
         $requete = $linkpdo->prepare('INSERT INTO matchs(Date_heure_match,Nom_equipe_adverse,Rencontre_domicile)
         VALUES (:date_time,:equipeadv,:domicile)');
-        //Transformation de la date est de l'heure rentrée en type Datetime
-        $date_time = ($date.' '.$heure.':00');
+        
+        //Transformation de dd-mm-yyyy en yyyy-mm-dd
+        $date_explode = explode('-', $date);
+        $date_dateTime= $date_explode[2] . '-' . $date_explode[1] . '-' . $date_explode[0];
+        $date_time = ($date_dateTime.' '.$heure.':00');
         //liaison du formulaire à la requete SQL
         $requete->execute(array('date_time'=>$date_time,'equipeadv'=>$equipeadv,
         'domicile'=>$domicile));
