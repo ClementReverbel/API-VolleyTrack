@@ -21,6 +21,7 @@
         return $requeteJoueurs->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    //Récupère un joueur avec son numéro de licence
     function getJoueur($linkpdo, $numLic){
         $requete = $linkpdo->prepare('SELECT * FROM joueurs WHERE Numéro_de_licence = :num');
         $requete->execute(array('num' => $numLic));
@@ -31,6 +32,7 @@
     //                      Méthode PUT - Modification d'un joueur
     //###########################################################################################################################
 
+    //Modifie un joueur avec son numéro de licence
     function updateJoueur($linkpdo, $numLic, $nom, $prenom, $date_de_naissance, $taille, $poids, $commentaire, $statut){
         $requete = $linkpdo->prepare('UPDATE joueurs SET Nom = :Nom, Prenom = :Prenom,
             Date_de_naissance = :Date_de_naissance, Taille = :Taille, 
@@ -71,6 +73,7 @@
     //                      Méthode POST - Création d'un joueur
     //###########################################################################################################################
 
+    //Crée un joueur
     function createJoueur($linkpdo, $numLic, $nom, $prenom, $date_de_naissance, $taille, $poids, $commentaire,){
         $requete = $linkpdo->prepare('INSERT INTO joueurs(Numéro_de_licence,Nom,Prenom,Date_de_naissance ,Taille,Poids,Commentaire,Statut)
                 VALUES (:num,:Nom,:Prenom,:Date_de_naissance ,:Taille, :Poids,:Commentaire,:Statut)');
