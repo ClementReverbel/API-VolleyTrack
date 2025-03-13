@@ -2,6 +2,7 @@
     //###########################################################################################################################
     //                      Méthode GET - Récupération des joueurs
     //###########################################################################################################################
+    
     function getJoueurActif($linkpdo){
         // Récupération de la liste des joueurs actifs
         $requeteJoueurs = $linkpdo->prepare("
@@ -25,7 +26,6 @@
         $requete->execute(array('num' => $numLic));
         return $requete->fetchAll(PDO::FETCH_ASSOC);
     }
-
 
     //###########################################################################################################################
     //                      Méthode PUT - Modification d'un joueur

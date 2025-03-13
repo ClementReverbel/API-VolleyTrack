@@ -1,4 +1,5 @@
 <?php
+
     //Validation JWT - Appel AuthAPI
     function get_authorization_header(){
         $headers = null;

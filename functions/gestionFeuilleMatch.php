@@ -44,7 +44,7 @@
     }
 
     //###########################################################################################################################
-    //                      Méthode Get - Récupérer les joueurs d'un match donné
+    //                      Méthode GET - Récupérer les joueurs d'un match donné
     //###########################################################################################################################
 
     function getJoueursSelectionnesAUnMatch($linkpdo,$idMatch){
@@ -206,6 +206,7 @@
         $joueursActif = getJoueurActif($linkpdo);
         $dateHeureMatch = getDateMatch($linkpdo, $idMatch);
 
+        //Nous vérifions que les données fournies ne sont pas vides
         $joueurs = !empty($listeidjoueur) ? array_filter($listeidjoueur) : [];
         $roles = !empty($listerole) ? $listerole : [];
         $notes = !empty($listenote) ? $listenote : [];
