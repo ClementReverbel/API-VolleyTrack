@@ -85,44 +85,46 @@
         $requete = $linkpdo->prepare('SELECT * FROM matchs WHERE id_match = :id');
         $requete->execute(array('id'=>$idMatch));
         $match = $requete->fetch(PDO::FETCH_ASSOC);
-        $domicile = "";
-        //Changement du type boolean en oui ou non
-        if($match['Rencontre_domicile'] === 1){
-            $domicile = "OUI";
-        } else {
-            $domicile = "NON";
+        if (!empty($match)){
+            $domicile = "";
+            //Changement du type boolean en oui ou non
+            if($match['Rencontre_domicile'] === 1){
+                $domicile = "OUI";
+            } else {
+                $domicile = "NON";
+            }
+
+            $gagne = "";
+            //Chagement du type boolean en Gagné ou perdu
+            if($match['Resultat'] === 1){
+                $gagne = "GAGNÉ";
+            } else if($match['Resultat'] === 0){
+                $gagne = "PERDU";
+            }
+            
+            //Pour mieux afficher les données dans le tableau je transforme mon type Datetime de SQL 
+            //en quelque chose de plus lisible
+            $date_heure_return = $match['Date_heure_match'];
+            list($date_return, $time_return) = explode(' ', $date_heure_return);
+
+            // Change la date en dd-mm-yyyy
+            $dateFormatted = date('d-m-Y', strtotime($date_return));
+
+            // Garder uniquement l'heure hh:mm
+            $timeFormatted = substr($time_return, 0, 5);
+            
+            //Concaténation pour l'affichage
+            $date_heure = $dateFormatted." ".$timeFormatted;
+
+            return [
+                'id' => $match['id_match'],
+                'date_heure' => $date_heure,
+                'equipeadv' => $match['Nom_equipe_adverse'],
+                'domicile' => $domicile,
+                'score' => $match['Score'],
+                'gagne' => $gagne
+            ];
         }
-
-        $gagne = "";
-        //Chagement du type boolean en Gagné ou perdu
-        if($match['Resultat'] === 1){
-            $gagne = "GAGNÉ";
-        } else if($match['Resultat'] === 0){
-            $gagne = "PERDU";
-        }
-        
-        //Pour mieux afficher les données dans le tableau je transforme mon type Datetime de SQL 
-        //en quelque chose de plus lisible
-        $date_heure_return = $match['Date_heure_match'];
-        list($date_return, $time_return) = explode(' ', $date_heure_return);
-
-        // Change la date en dd-mm-yyyy
-        $dateFormatted = date('d-m-Y', strtotime($date_return));
-
-        // Garder uniquement l'heure hh:mm
-        $timeFormatted = substr($time_return, 0, 5);
-        
-        //Concaténation pour l'affichage
-        $date_heure = $dateFormatted." ".$timeFormatted;
-
-        return [
-            'id' => $match['id_match'],
-            'date_heure' => $date_heure,
-            'equipeadv' => $match['Nom_equipe_adverse'],
-            'domicile' => $domicile,
-            'score' => $match['Score'],
-            'gagne' => $gagne
-        ];
     }
 
 
