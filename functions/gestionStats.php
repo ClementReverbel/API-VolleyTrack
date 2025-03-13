@@ -108,4 +108,16 @@
         return $selectionsConsecutives;
     }
 
+    //Ajoute les sélections consécutives à la liste des statistiques des joueurs
+    function getAllStatsJoueur($linkpdo){
+        //Récupère les statistiques des joueurs
+        $data = getStatJoueur($linkpdo);
+        //Récupère les sélections consécutives
+        $selectionsConsecutives = getSelectionsConsecutives($linkpdo);
+        //Ajoute les sélections consécutives grâce à l'id du joueur
+        foreach($selectionsConsecutives as $idjoueur => $selections_j){
+            $data[$idjoueur]['selections_consecutives'] = $selections_j;
+        }
+        return $data;
+    }
 ?>
