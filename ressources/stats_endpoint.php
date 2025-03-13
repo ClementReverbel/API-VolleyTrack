@@ -17,7 +17,7 @@
                 //Vérifie si la statistique demandée est celle du match
                 } else if(isset($_GET['stats_match'])){
                     $data = getStatMatch($linkpdo);
-                    deliver_response(200, "Statistiques du match", $data);
+                    deliver_response(200, "Récupération des statistiques des matchs", $data);
                 } else {
                     //Si aucune statistique n'est demandée, on renvoie une erreur
                     deliver_response(400, "Veuillez spécifier le type de statistique à récupérer (stats_joueur ou stats_match)");
