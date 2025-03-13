@@ -20,11 +20,18 @@
         return $requeteJoueurs->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    function getJoueur($linkpdo, $numLic){
+        $requete = $linkpdo->prepare('SELECT * FROM joueurs WHERE Numéro_de_licence = :num');
+        $requete->execute(array('num' => $numLic));
+        return $requete->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
     //###########################################################################################################################
     //                      Méthode PUT - Modification d'un joueur
     //###########################################################################################################################
 
-    function updateJoueur($linkpdo, $idJoueur, $nom, $prenom, $date_de_naissance, $taille, $poids, $commentaire, $statut){
+    function updateJoueur($linkpdo, $numLic, $nom, $prenom, $date_de_naissance, $taille, $poids, $commentaire, $statut){
         $requete = $linkpdo->prepare('UPDATE joueurs SET Nom = :Nom, Prenom = :Prenom,
             Date_de_naissance = :Date_de_naissance, Taille = :Taille, 
             Poids = :Poids, Commentaire = :Commentaire, Statut = :statut 
@@ -32,7 +39,7 @@
         $requete->execute(array('Nom' => $nom, 'Prenom' => $prenom,
             'Date_de_naissance' => $date_de_naissance, 'Taille' => $taille,
             'Poids' => $poids, 'Commentaire' => $commentaire, 'statut' => $statut,
-            'num' => $idJoueur));
+            'num' => $numLic));
     }
 
     //###########################################################################################################################
@@ -40,10 +47,11 @@
     //###########################################################################################################################
 
     //Supprime un joueur si il n'a pas participer à un match
-    function deleteJoueur($linkpdo, $NumLic){
-            $nbMatchRequete = $linkpdo->prepare('SELECT count(*) FROM participer p  WHERE p.idJoueur = (SELECT idJoueur FROM joueurs WHERE Numéro_de_licence = :num)');
+    function deleteJoueur($linkpdo, $numLic){
+            $nbMatchRequete = $linkpdo->prepare('SELECT count(*) FROM participer p
+            WHERE p.idJoueur = (SELECT idJoueur FROM joueurs WHERE Numéro_de_licence = :num)');
             $nbMatchRequete->execute([
-                'num' => $NumLic
+                'num' => $numLic
             ]);
             $nombreDeMatchs = $nbMatchRequete->fetchColumn();
             //Si le joueur à participer à un match, on ne peu pas le supprimer
@@ -53,9 +61,19 @@
             } else {
                 $supprimerRequete = $linkpdo->prepare('DELETE FROM joueurs WHERE Numéro_de_licence = :num');
                 $supprimerRequete->execute([
-                    'num' => $NumLic
+                    'num' => $numLic
                 ]);
                 return true;
             }
+    }
+
+    //###########################################################################################################################
+    //                      Méthode POST - Création d'un joueur
+    //###########################################################################################################################
+
+    function createJoueur($linkpdo, $numLic, $nom, $prenom, $date_de_naissance, $taille, $poids, $commentaire,){
+        $requete = $linkpdo->prepare('INSERT INTO joueurs(Numéro_de_licence,Nom,Prenom,Date_de_naissance ,Taille,Poids,Commentaire,Statut)
+                VALUES (:num,:Nom,:Prenom,:Date_de_naissance ,:Taille, :Poids,:Commentaire,:Statut)');
+        $requete->execute(array('num' => $numLic, 'Nom' => $nom, 'Prenom' => $prenom, 'Date_de_naissance' => $date_de_naissance, 'Taille' => $taille, 'Poids' => $poids, 'Commentaire' => $commentaire, 'Statut' => 'Actif'));
     }
 ?>

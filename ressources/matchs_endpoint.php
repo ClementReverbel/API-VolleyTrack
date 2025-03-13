@@ -3,7 +3,9 @@
     include '../functions/gestionMatchs.php';
     include 'deliver_response.php';
     include '../functions/connexion_db.php';
+    include '../functions/verificationJWT.php';
 
+    if(getJwtValid()){
     $linkpdo = connexion_db();
     $http_method = $_SERVER['REQUEST_METHOD'];
     switch ($http_method){
@@ -34,6 +36,8 @@
             }
             break;
     }
-
+    } else {
+        deliver_response(401, "Veuillez vous connecter pour accéder à l'application");
+    }
     $linkpdo = null;
 ?>
