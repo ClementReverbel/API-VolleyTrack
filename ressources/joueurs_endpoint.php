@@ -22,7 +22,7 @@
                     }
                 } else {
                     // Sinon on récupère tous les joueurs actifs
-                    $joueurs = getJoueurActif($linkpdo);
+                    $joueurs = getAllJoueur($linkpdo);
                     deliver_response(200, "Liste des joueurs actifs récupérée avec succès", $joueurs);
                 }
                 break;

@@ -20,6 +20,23 @@
         $requeteJoueurs->execute();
         return $requeteJoueurs->fetchAll(PDO::FETCH_ASSOC);
     }
+    
+    function getAllJoueur($linkpdo){
+        // Récupération de la liste des joueurs actifs
+        $requeteJoueurs = $linkpdo->prepare("
+            SELECT idJoueur, CONCAT(Nom, ' ', Prenom) AS NomComplet, 
+                Taille, 
+                Poids, 
+                (SELECT ROUND(SUM(Note)/COUNT(*), 1)
+                FROM participer 
+                WHERE participer.idJoueur = j.idJoueur
+                ) AS Moyenne_note, 
+                Commentaire 
+            FROM joueurs j
+        ");
+        $requeteJoueurs->execute();
+        return $requeteJoueurs->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     //Récupère un joueur avec son numéro de licence
     function getJoueur($linkpdo, $numLic){

@@ -20,7 +20,7 @@
                     $joueurs = getJoueursSelectionnesAUnMatch($linkpdo, $id);
                     //Vérifie si la requête a bel et bien renvoyé des données
                     if (empty($joueurs)){
-                        deliver_response(404, "L'ID du match ne pointe vers aucun joueurs");
+                        deliver_response(404, "Le match choisi n'a pas de feuille de match");
                     } else {
                         deliver_response(200, "Joueurs du match selectionné récupérés avec succès", $joueurs);
                     }

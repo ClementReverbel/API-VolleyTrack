@@ -6,20 +6,22 @@
 
     //Récupère la date et l'heure d'un match
     function getDateMatch($linkpdo,$idMatch){
-    $requeteDateMatch = $linkpdo->prepare("
-                SELECT Date_heure_match
-                FROM matchs
-                WHERE id_match = :id;
-            ");
-            $requeteDateMatch -> execute(array("id" => $idMatch));
-            $dateHeureMatch = $requeteDateMatch->fetch();
-            return $dateHeureMatch;
+        $requeteDateMatch = $linkpdo->prepare("
+            SELECT Date_heure_match
+            FROM matchs
+            WHERE id_match = :id;
+        ");
+        $requeteDateMatch -> execute(array("id" => $idMatch));
+        $dateHeureMatch = $requeteDateMatch->fetch();
+        return $dateHeureMatch;
     }
 
 
-    //Récupère tous les matchs
+    //Récupère tous les matchs 
     function getAllMatchs($linkpdo){
         $matchs = $linkpdo->query("SELECT * FROM matchs");
+        $tableau_res=[];
+        $i=0;
         while ($match = $matchs->fetch(PDO::FETCH_ASSOC)) {
                 $domicile = "";
                 //Changement du type boolean en oui ou non
@@ -51,7 +53,7 @@
                 //Concaténation pour l'affichage
                 $date_heure = $dateFormatted." ".$timeFormatted;
 
-                return [
+                $tableau_res[$i]=[
                     'id' => $match['id_match'],
                     'date_heure' => $date_heure,
                     'equipeadv' => $match['Nom_equipe_adverse'],
@@ -59,7 +61,9 @@
                     'score' => $match['Score'],
                     'gagne' => $gagne
                 ];
+                $i++;
         }
+        return $tableau_res;
     }
 
     //Récupère un match en fonction de son id
