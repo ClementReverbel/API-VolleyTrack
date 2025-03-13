@@ -154,10 +154,27 @@
         $date_explode = explode('-', $date);
         $date_dateTime= $date_explode[2] . '-' . $date_explode[1] . '-' . $date_explode[0];
         $date_time = ($date_dateTime.' '.$heure.':00');
-        //liaison du formulaire à la requete SQL
-        $requete->execute(array('date_time'=>$date_time,'equipeadv'=>$equipeadv,
-        'domicile'=>$domicile));
+
+        //Si la date est valide
+        if(validateDate($date_time)){
+            if($domicile == "1" or $domicile == "0"){
+                    //liaison du formulaire à la requete SQL
+                    $requete->execute(array('date_time'=>$date_time,'equipeadv'=>$equipeadv,
+                    'domicile'=>$domicile));
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
+
+
+        function validateDate($date, $format = 'Y-m-d H:i:s')
+        {
+            $d = DateTime::createFromFormat($format, $date);
+            return $d && $d->format($format) == $date;
+        }
 
     function updateScore($linkpdo, $idMatch, $score){
         $requete = $linkpdo->prepare('UPDATE matchs SET Score = :score , Resultat = :resultat WHERE id_match = :id');
