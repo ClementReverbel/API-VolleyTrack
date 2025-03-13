@@ -214,7 +214,7 @@
         // Vérifications des données
         $message = validerDonneesFeuilleMatch($joueurs, $roles);
 
-        if (!(sizeof($joueurs)==sizeof($roles)==sizeof($notes))){
+        if (!(sizeof($joueurs)==sizeof($roles)&&sizeof($roles)==sizeof($notes)&&sizeof($joueurs)==sizeof($notes))){
             $message= "Erreur, le nombre de joueurs/roles/notes ne correspond pas";
         }
         

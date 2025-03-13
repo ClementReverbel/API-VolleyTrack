@@ -39,7 +39,6 @@
     function getJwtValid(){
         $jeton=get_bearer_token();
         if($jeton!=null){
-
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, "authapi.alwaysdata.net/authapi.php");
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
