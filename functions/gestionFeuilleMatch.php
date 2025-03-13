@@ -131,6 +131,26 @@
     //                  Méthode PUT - Modification d'une feuille de match
     //###########################################################################################################################
 
+    function deleteAncienJoueur($linkpdo,$idMatch,$joueurs,$joueursAvantModif){
+        //Partie du code qui enlève les joueurs retirés de la feuille de match
+        //D'abord on vérifie si c'est le cas avec la taille des listes
+        if (sizeof($joueurs)<=sizeof($joueursAvantModif)){
+            $requeteDelete = $linkpdo->prepare("
+            DELETE FROM participer WHERE idMatch=:idMatch AND idJoueur=:idJoueur");
+            //Ensuite on parcours chaque ancien joueur
+            foreach($joueursAvantModif as $joueurSelected){
+                //Et on vérifie s'ils sont dans la nouvelle liste
+                $idJoueurSelected = $joueurSelected['idJoueur'];
+                if(!in_array($idJoueurSelected,$joueurs)){
+                    //Si ce n'est pas le cas, on le delete
+                    $requeteDelete->execute([
+                        ':idJoueur' => $idJoueurSelected,
+                        ':idMatch' => $idMatch
+                    ]);
+                }
+            }
+        }
+    }
 
     //Modifie la place d'un joueur donné dans un feuille de match 
     function miseAJourFeuilleMatch($linkpdo, $idMatch, $joueurs, $roles, $notes,$joueursAvantModif){
@@ -145,11 +165,16 @@
                 VALUES (:idJoueur, :idMatch, :Role_titulaire, :Poste, :Note)
             ");
 
+            //Retirons les anciens joueurs non présents dans la modification
+            deleteAncienJoueur($linkpdo,$idMatch,$joueurs,$joueursAvantModif);
+
+            //Ensuite on parcourt la liste d'id des nouveaux joueurs
             for($i = 0; $i < sizeof($joueurs); $i++) {
                 $idJoueur = $joueurs[$i];
                 $role = $roles[$i];
                 $roleTitulaire = ($role != 5);
 
+                //S'ils étaient déjà dans la table, on les update
                 if(in_array($joueurs[$i],$joueursAvantModif)){
                     $requeteUpdate->execute([
                         ':idJoueur' => $idJoueur,
@@ -159,17 +184,14 @@
                         ':Note' => $notes[$i]
                     ]);
                 } else {
-                    if (sizeof($joueurs)<=sizeof($joueursAvantModif)){
-
-                    } else {
-                        $requeteInsert->execute([
-                            ':idJoueur' => $idJoueur,
-                            ':idMatch' => $idMatch,
-                            ':Role_titulaire' => $roleTitulaire,
-                            ':Poste' => $role,
-                            ':Note' => $notes[$i]
-                        ]);
-                    }
+                    //Sinon on les rajoute dans la table
+                    $requeteInsert->execute([
+                        ':idJoueur' => $idJoueur,
+                        ':idMatch' => $idMatch,
+                        ':Role_titulaire' => $roleTitulaire,
+                        ':Poste' => $role,
+                        ':Note' => $notes[$i]
+                    ]);
                 }
             }        
             return true; 
