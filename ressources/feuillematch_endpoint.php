@@ -66,6 +66,10 @@ if (getJwtValid()) {
                 deliver_response(400, "L'id du match, la liste des id des jouers, la liste des roles et la liste des notes sont requis");
             }
             break;
+        //Renvoie un code d'erreur correct pour les mauvaises requêtes et pas seulement une erreur serveur
+        case "DELETE":
+            deliver_response(405, "Méthode non implémentée, il est impossible de supprimer une feuille de match");
+            break;
     }
 } else {
     deliver_response(401, "Veuillez vous connecter pour accéder à l'application");

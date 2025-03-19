@@ -141,7 +141,7 @@
                                 deliver_response(200, "Joueur supprimé avec succès");
                             } else {
                                 //Sinon la suppression n'est pas possible
-                                deliver_response(405, "Le joueur a participé à un match et ne peut pas être supprimé");
+                                deliver_response(403, "Le joueur a participé à un match et ne peut pas être supprimé");
                             }
                         } else {
                             //Si le joueur n'existe pas, on renvoie une erreur

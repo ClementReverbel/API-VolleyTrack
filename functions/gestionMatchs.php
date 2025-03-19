@@ -65,22 +65,8 @@
         }
         return $tableau_res;
     }
-
-    //Récupère un match en fonction de son id
-    function isMatchJouer($linkpdo, $idMatch){
-              //Date actuelle sous forme de tableau
-              $date_array = getdate();
-
-              //Récupération des bonnes informations de la date actuelle
-              $date_actu = $date_array['mday']."-".$date_array['mon']."-".$date_array['year'];
-
-              //Récupération de la date et de l'heure du match
-              $date_heure_match = getDateMatch($linkpdo, $idMatch);
-
-              //Comparaison des dates
-              return $date_actu > $date_heure_match;
-    }
     
+    //Récupère le match d'un ID donné, si l'id n'a pas de match, renvoie null
     function getOneMatch($linkpdo, $idMatch){
         $requete = $linkpdo->prepare('SELECT * FROM matchs WHERE id_match = :id');
         $requete->execute(array('id'=>$idMatch));
@@ -155,27 +141,10 @@
         $date_dateTime= $date_explode[2] . '-' . $date_explode[1] . '-' . $date_explode[0];
         $date_time = ($date_dateTime.' '.$heure.':00');
 
-        //Si la date est valide
-        if(validateDate($date_time)){
-            if($domicile == "1" or $domicile == "0"){
-                    //liaison du formulaire à la requete SQL
-                    $requete->execute(array('date_time'=>$date_time,'equipeadv'=>$equipeadv,
-                    'domicile'=>$domicile));
-                    return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+        //liaison du formulaire à la requete SQL
+        $requete->execute(array('date_time'=>$date_time,'equipeadv'=>$equipeadv,
+        'domicile'=>$domicile));
     }
-
-
-        function validateDate($date, $format = 'Y-m-d H:i:s')
-        {
-            $d = DateTime::createFromFormat($format, $date);
-            return $d && $d->format($format) == $date;
-        }
 
     function updateScore($linkpdo, $idMatch, $score){
         $requete = $linkpdo->prepare('UPDATE matchs SET Score = :score , Resultat = :resultat WHERE id_match = :id');
@@ -197,6 +166,45 @@
         $resultat = ($sets_gagnes >= 3) ? 1 : 0;
         
         $requete->execute(array('score'=>$score, 'id'=>$idMatch, 'resultat'=>$resultat));
+    }
+
+    //###########################################################################################################################
+    //                      Méthode DELETE - Suppresion d'un match
+    //###########################################################################################################################
+
+    //Renvoie true si le match a déjà été joué (date dépassée)
+    //Renvoie false sinon
+    function isMatchJouer($linkpdo, $idMatch){
+        //Date actuelle sous forme de tableau
+        $date_array = getdate();
+
+        //Récupération des bonnes informations de la date actuelle
+        $date_actu = $date_array['mday']."-".$date_array['mon']."-".$date_array['year'];
+
+        //Récupération de la date et de l'heure du match
+        $date_heure_match = getDateMatch($linkpdo, $idMatch);
+
+        //Comparaison des dates
+        return $date_actu > $date_heure_match;
+    }
+
+    //Renvoie true si le match a une feuille de match associée
+    //Renvoie false sinon
+    function aUneFeuilleDeMatch($linkpdo,$idMatch){
+        $feuilleMatchRequete = $linkpdo->prepare('SELECT count(*) FROM participer WHERE id_match=:idMatch');
+        $feuilleMatchRequete->execute([
+            'idMatch' => $idMatch
+        ]);
+        $resultat = $feuilleMatchRequete->fetch(PDO::FETCH_ASSOC);
+        return $resultat['count']>0;
+    }
+    
+    //Permet de supprimer un match ne disposant pas de feuille de match et n'ayant pas dépassé sa date
+    function supprimerUnMatch($linkpdo, $idMatch){
+        $supprimerRequete = $linkpdo->prepare('DELETE FROM matchs WHERE id_match = :idMatch');
+        $supprimerRequete->execute([
+            'idMatch' => $idMatch
+        ]);
     }
 
 ?>

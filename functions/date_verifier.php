@@ -9,4 +9,11 @@
             return false;
         }
     }
+
+    //Vérifie si l'heure est valide
+    function heure_valide($heure){
+        $format = 'H:i';
+        $d = DateTime::createFromFormat($format, $heure);
+        return $d && $d->format($format) == $heure;
+    }
 ?>
