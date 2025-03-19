@@ -23,6 +23,10 @@
                     deliver_response(400, "Veuillez spécifier le type de statistique à récupérer (stats_joueur ou stats_match)");
                 }
                 break;
+            //Renvoie un code d'erreur correct pour les mauvaises requêtes et pas seulement une erreur serveur
+            default:
+                deliver_response(405, "Méthode non implémentée, seul la méthode GET est disponible pour les statistiques");
+                break;
         }
     } else {
         // Réponse en cas d'échec de l'authentification
