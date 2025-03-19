@@ -51,12 +51,14 @@
 
     //Modifie un joueur avec son numéro de licence
     function updateJoueur($linkpdo, $numLic, $nom, $prenom, $date_de_naissance, $taille, $poids, $commentaire, $statut){
+        $date_explode = explode('-', $date_de_naissance);
+        $date_dateTime= $date_explode[2] . '-' . $date_explode[1] . '-' . $date_explode[0];
         $requete = $linkpdo->prepare('UPDATE joueurs SET Nom = :Nom, Prenom = :Prenom,
             Date_de_naissance = :Date_de_naissance, Taille = :Taille, 
             Poids = :Poids, Commentaire = :Commentaire, Statut = :statut 
             WHERE Numéro_de_licence = :num');
         $requete->execute(array('Nom' => $nom, 'Prenom' => $prenom,
-            'Date_de_naissance' => $date_de_naissance, 'Taille' => $taille,
+            'Date_de_naissance' => $date_dateTime, 'Taille' => $taille,
             'Poids' => $poids, 'Commentaire' => $commentaire, 'statut' => $statut,
             'num' => $numLic));
     }
@@ -93,15 +95,32 @@
     //Crée un joueur
     function createJoueur($linkpdo, $numLic, $nom, $prenom, $date_de_naissance, $taille, $poids, $commentaire,){
         $date_explode = explode('-', $date_de_naissance);
-        if(checkdate($date_explode[1], $date_explode[0] , $date_explode[2])){
             $date_dateTime= $date_explode[2] . '-' . $date_explode[1] . '-' . $date_explode[0];
 
             $requete = $linkpdo->prepare('INSERT INTO joueurs(Numéro_de_licence,Nom,Prenom,Date_de_naissance ,Taille,Poids,Commentaire,Statut)
                     VALUES (:num,:Nom,:Prenom,:Date_de_naissance ,:Taille, :Poids,:Commentaire,:Statut)');
             $requete->execute(array('num' => $numLic, 'Nom' => $nom, 'Prenom' => $prenom, 'Date_de_naissance' => $date_dateTime, 'Taille' => $taille, 'Poids' => $poids, 'Commentaire' => $commentaire, 'Statut' => 'Actif'));
-            return true;
-        } else {        
-            return false;
         }
+
+    //############################################################################################################################
+    //                              Fontions utiles
+    //############################################################################################################################
+
+    //Vérifie si le numéro de licence est valide
+    function numLicValide($numLic){
+        return strlen($numLic) == 10 && substr($numLic, 0, 3) == "VOL";
+    }
+
+    //Vérifie que le Statut est existant
+    function statutValide($statut){
+        return $statut == "Actif" || $statut == "Blessé" || $statut == "Suspendu" || $statut == "Absent";
+    }
+
+    //Vérifie si le numéro de licence existe
+    function numLicExiste($linkpdo, $numLic){
+        $requete = $linkpdo->prepare('SELECT * FROM joueurs WHERE Numéro_de_licence = :num');
+        $requete->execute(array('num' => $numLic));
+        $requete->fetchAll(PDO::FETCH_ASSOC);
+        return $requete->rowCount() > 0;
     }
 ?>

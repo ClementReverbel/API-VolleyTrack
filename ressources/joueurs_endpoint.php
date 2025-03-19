@@ -3,6 +3,7 @@
     include 'deliver_response.php';
     include '../functions/connexion_db.php';
     include '../functions/verificationJWT.php';
+    include '../functions/date_verifier.php';
     // Vérification de l'authentification
     if(getJwtValid()){
         // Connexion à la base de données
@@ -14,11 +15,17 @@
                 if(isset($_GET['numLic'])){
                     //Si le numéro de licence est présent, on vérifie si il est valide
                     if(numLicValide($_GET['numLic'])){
+                        //Si le joueur existe, on le récupère
+                        if(numLicExiste($linkpdo, $_GET['numLic'])){
                         $joueur = getJoueur($linkpdo, $_GET['numLic']);
                         deliver_response(200, "Joueur récupéré avec succès", $joueur);
+                        } else {
+                            //Si le joueur n'existe pas, on renvoie une erreur
+                            deliver_response(404, "Le joueur avec ce numéro de licence n'existe pas");
+                        }
                     } else {
                         //Si le numéro de licence ne fait pas 10 caractères, on renvoie une erreur
-                        deliver_response(400, "Le numéro de licence est doit contenir 10 caractères");
+                        deliver_response(400, "Le numéro de licence est doit contenir 10 caractères et commencé par VOL");
                     }
                 } elseif(isset($_GET['actif'])){
                     // Sinon on récupère tous les joueurs actifs
@@ -40,24 +47,33 @@
                 isset($data['taille']) && isset($data['poids']) && isset($data['commentaire'])){
                     //Si le numéro de licence est présent, on vérifie si il est valide
                     if(numLicValide($data['numLic'])){
-                        //Vérifie si la taille et le poids sont des chiffres
-                        if(is_numeric($data['taille'])&&is_numeric($data['poids'])){
-                            $response = createJoueur($linkpdo, $data['numLic'], $data['nom'], 
-                            $data['prenom'], $data['date_de_naissance'], $data['taille'], 
-                            $data['poids'], $data['commentaire']);
-                            if($response){
+                        if(!numLicExiste($linkpdo, $data['numLic'])){
+                            //Vérifie si la taille et le poids sont des chiffres
+                            if(is_numeric($data['taille'])&&is_numeric($data['poids'])){
+                                //Vérifie si la date est valide
+                                if(date_valide($data["date_de_naissance"])){
+                                $response = createJoueur($linkpdo, $data['numLic'], $data['nom'], 
+                                $data['prenom'], $data['date_de_naissance'], $data['taille'], 
+                                $data['poids'], $data['commentaire']);
                                 deliver_response(201, "Joueur créé avec succès");
+                                } else {
+                                    //Si la date n'est pas valide, on renvoie une erreur
+                                    deliver_response(400, "Mauvaise date");
+                                }
                             } else {
-                                deliver_response(201, "Mauvaise date");
+                                //Si la taille ou le poids ne sont pas des chiffres, on renvoie une erreur
+                                deliver_response(400, "La taille et le poids doivent être numérique");
                             }
                         } else {
-                            deliver_response(400, "La taille et le poids doivent être numérique");
+                            //Si le joueur existe déjà, on renvoie une erreur
+                            deliver_response(409, "Le joueur avec ce numéro de licence existe déjà");
                         }
                     } else {
                         //Si le numéro de licence ne fait pas 10 caractères, on renvoie une erreur
-                        deliver_response(400, "Le numéro de licence est doit contenir 10 caractères");
+                        deliver_response(400, "Le numéro de licence est doit contenir 10 caractères et commencé par VOL");
                     }
                 } else {
+                    //Si une des informations requises est manquante, on renvoie une erreur
                     deliver_response(400, "Le numéro de licence, le nom, le prénom, la date de naissance, la taille, le poids et le commentaire sont requis pour créer un joueur");
                 }
                 break;
@@ -71,14 +87,40 @@
                     isset($data['poids']) && isset($data['commentaire']) && isset($data['statut'])){
                     //Si le numéro de licence est présent, on vérifie si il est valide
                     if(numLicValide($data['numLic'])){
-                        $joueur = updateJoueur($linkpdo, $data['numLic'], $data['nom'], $data['prenom'], 
-                        $data['date_de_naissance'], $data['taille'], $data['poids'], $data['commentaire'], $data['statut']);
-                        deliver_response(200, "Joueur modifié avec succès", $joueur);
+                        //Vérifi si le joueur existe
+                        if(numLicExiste($linkpdo, $data['numLic'])){
+                            //Vérifie si la taille et le poids sont des chiffres
+                            if(is_numeric($data['taille'])&&is_numeric($data['poids'])){
+                                //Vérifie si la date est valide
+                                if(date_valide($data["date_de_naissance"])){
+                                    //Vérifie si le statut est valide
+                                    if(statutValide($data['statut'])){
+                                    //Modification du joueur
+                                    $joueur = updateJoueur($linkpdo, $data['numLic'], $data['nom'], $data['prenom'], 
+                                    $data['date_de_naissance'], $data['taille'], $data['poids'], $data['commentaire'], $data['statut']);
+                                    deliver_response(200, "Joueur modifié avec succès", $joueur);
+                                    } else {
+                                        //Si le statut n'est pas valide, on renvoie une erreur
+                                        deliver_response(400, "Le statut doit être : Actif, Blessé, Suspendu ou Absent");
+                                    }
+                                } else {
+                                    //Si la date n'est pas valide, on renvoie une erreur
+                                    deliver_response(400, "Mauvaise date");
+                                }
+                            } else {
+                                //Si la taille ou le poids ne sont pas des chiffres, on renvoie une erreur
+                                deliver_response(400, "La taille et le poids doivent être numérique");
+                            }
+                        } else {
+                            //Si le joueur n'existe pas, on renvoie une erreur
+                            deliver_response(404, "Le joueur avec ce numéro de licence n'existe pas");
+                        }
                     } else {
                         //Si le numéro de licence ne fait pas 10 caractères, on renvoie une erreur
-                        deliver_response(400, "Le numéro de licence est doit contenir 10 caractères");
+                        deliver_response(400, "Le numéro de licence est doit contenir 10 caractères est commencer par VOL");
                     }
                 } else {
+                    //Si une des informations requises est manquante, on renvoie une erreur
                     deliver_response(400, "Le numéro de licence, le nom, le prénom, la date de naissance, la taille, le poids, le commentaire et le statut sont requis pour modifier un joueur");
                 }
                 break;
@@ -88,14 +130,26 @@
                 $data = json_decode($postedData,true);
                 // Suppression d'un joueur existant
                 if(isset($data['numLic'])){
-                    //Si le numéro de licence est présent, on vérifie si le joueur a participé à un match
-                    $joueur = deleteJoueur($linkpdo, $data['numLic']);
-                    if($joueur){
-                        //Si le joueur n'a participé à aucun match, on le supprime
-                        deliver_response(200, "Joueur supprimé avec succès");
+                    //Vérifie si le numéro de licence est valide
+                    if(numLicValide($data['numLic'])){
+                        //On vérifie si le joueur existe
+                        if(numLicExiste($linkpdo, $data['numLic'])){
+                        //On vérifie si le joueur a participé à un match
+                        $joueur = deleteJoueur($linkpdo, $data['numLic']);
+                            if($joueur){
+                                //Si le joueur n'a participé à aucun match, on le supprime
+                                deliver_response(200, "Joueur supprimé avec succès");
+                            } else {
+                                //Sinon la suppression n'est pas possible
+                                deliver_response(405, "Le joueur a participé à un match et ne peut pas être supprimé");
+                            }
+                        } else {
+                            //Si le joueur n'existe pas, on renvoie une erreur
+                            deliver_response(404, "Le joueur avec ce numéro de licence n'existe pas");
+                        }
                     } else {
-                        //Sinon la suppression n'est pas possible
-                        deliver_response(405, "Le joueur a participé à un match et ne peut pas être supprimé");
+                        //Si le numéro de licence ne fait pas 10 caractères, on renvoie une erreur
+                        deliver_response(400, "Le numéro de licence est doit contenir 10 caractères et commencé par VOL");
                     }
                 } else {
                     //Si le numéro de licence n'est pas présent, on renvoie une erreur
@@ -109,8 +163,4 @@
     }
     // Fermeture de la connexion à la base de données
     $linkpdo = null;
-
-    function numLicValide($numLic){
-        return strlen($numLic) == 10;
-    }
 ?>
