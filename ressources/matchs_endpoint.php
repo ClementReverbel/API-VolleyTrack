@@ -40,7 +40,7 @@
                 $data = json_decode($postedData,true);
                 if(isset($data['date']) && isset($data['heure']) && isset($data['equipeadv']) && isset($data['domicile'])){
                     if ($data['domicile']==1 || $data['domicile']==0){
-                        if(date_valide($data['date'] && heure_valide($data['heure']))){
+                        if(date_valide($data['date']) && heure_valide($data['heure'])){
                             ajouterMatch($linkpdo, $data['date'], $data['heure'], $data['equipeadv'], $data['domicile']);
                             deliver_response(201, "Match ajouté avec succès");
                         } else {
@@ -57,8 +57,29 @@
                 $postedData = file_get_contents('php://input');
                 $data = json_decode($postedData,true);
                 if(isset($data['id']) && isset($data['date']) && isset($data['heure']) && isset($data['equipeadv']) && isset($data['domicile']) && isset($data['score'])){
-                    updateMatch($linkpdo, $data['id'], $data['date'], $data['heure'], $data['equipeadv'], $data['domicile'], $data['score']);
-                    deliver_response(200, "Match modifié avec succès");
+                    if(!empty(getOneMatch($linkpdo,$data['id']))){
+                        if ($data['domicile']==1 || $data['domicile']==0){
+                            if(date_valide($data['date']) && heure_valide($data['heure'])){
+                                if(getNbSetValide($data['score'])){
+                                    $message=getScoreValide($data['score']);
+                                    if($message=="Ok"){
+                                        updateMatch($linkpdo, $data['id'], $data['date'], $data['heure'], $data['equipeadv'], $data['domicile'], $data['score']);
+                                        deliver_response(200, "Match modifié avec succès");
+                                    } else { 
+                                        deliver_response(400,$message);
+                                    }
+                                } else {
+                                    deliver_response(400,"Le nombre de set doit être compris entre 3 et 5");
+                                }
+                            } else {
+                                deliver_response(400,"La date et l'heure doivent avoir respectivement le format jj/mm/yyyy et hh:mm");
+                            }
+                        } else {
+                            deliver_response(400, "Le domicile doit avoir une valeur de 1 ou 0, (1=A domicile, 0=Chez l'adversaire)");
+                        }                  
+                    } else {
+                        deliver_response(404,"L'id rentré ne correspond à aucun match");
+                    }
                 } else {
                     deliver_response(400, "L'id, la date, l'heure, l'équipe adverse, le lieu du match et le score sont requis");
                 }
@@ -67,18 +88,13 @@
             case "DELETE":
                 $postedData = file_get_contents('php://input');
                 $data = json_decode($postedData,true);
-                if ($data['id']){
-                    $match = getOneMatch($linkpdo, $data['id']);
-                    if (!empty($match)){
-                        if (!isMatchJouer($linkpdo,$data["id"])){
-                            if (!aUneFeuilleDeMatch($linkpdo,$data["id"])){
-                                supprimerUnMatch($linkpdo,$data["id"]);
-                                deliver_response(200,"Le match a bien été supprimé");
-                            } else {
-                                deliver_response(403,"Le match a une feuille de match, il ne peut pas être supprimé");
-                            }
+                if ($data['id']){   
+                    if (!empty(getOneMatch($linkpdo, $data['id']))){
+                        if (!aUneFeuilleDeMatch($linkpdo,$data["id"])){
+                            supprimerUnMatch($linkpdo,$data["id"]);
+                            deliver_response(200,"Le match a bien été supprimé");
                         } else {
-                            deliver_response(403,"Le match est déjà joué, il ne peut pas être supprimé");
+                            deliver_response(403,"Le match a une feuille de match, il ne peut pas être supprimé");
                         }
                     } else {
                         deliver_response(404,"L'id doit correspondre à un match existant");

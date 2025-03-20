@@ -1,6 +1,60 @@
 <?php
 
     //###########################################################################################################################
+    //                     Fonctions utiles
+    //###########################################################################################################################
+
+    //Vérifie la validité du nombre de set rentré dans un score au format :
+    //25-20, 25-20, 25-20...
+    function getNbSetValide($score){
+        //Explose la chaine de caractère pour obtenir chaque set séparément
+        $score_explode = explode(',', $score);
+        //Vérifie si le nombre de set est supérieur à 3 et inférieur à 5
+        return sizeof($score_explode)>=3 && sizeof($score_explode)<=5 ;
+    }
+
+    //Vérifie la validité des scores de chaque set d'un score au format :
+    //25-20, 25-20, 25-20...
+    function getScoreValide($score){
+        //Valide automatiquement le score, il sera changé en cas de problème
+        $validite="Ok";
+        //Explose la chaine de caractère pour obtenir chaque set séparément
+        $score_explode = explode(',', $score);
+        //Incrémenteur qui vérifie si nous sommes au dernier set
+        $i=1;
+        //On parcourt chaque set
+        foreach($score_explode as $set){
+            //On récupère les scores de chaque équipe (0=nous, 1=adversaire)
+            $set_explode=explode('-',$set);
+
+            //Vérifie si le score des sets est au moins à 25 pour les 4 premiers set
+            if($set_explode[0]<25 && $set_explode[1]<25 && $i<5){
+                $validite="Un score n'a pas les 25 points requis de validité";
+                break;
+            //Vérifie si le score du dernier set est au moins à 15
+            } elseif ($set_explode[0]<15 && $set_explode[1]<15 && $i==5){
+                $validite="Le dernier set n'a pas les 15 points requis de validité";
+                break;
+            }
+
+            $ecart=$set_explode[0]-$set_explode[1];
+            //Si le score du set nécessite la vérification de l'écart
+            if((($set_explode[0]>=25 || $set_explode[1]>=25) && $i<5) || (($set_explode[0]>=15 || $set_explode[1]>=15) && $i==5)){
+                //Vérifie si l'écart entre les deux scores est au moins de 2 
+                if($ecart<2 && $ecart>-2){
+                    $validite="L'écart entre deux scores est inférieur à 2";
+                    break;
+                }
+            }
+
+            //On passe au set suivant
+            $i++;
+        }
+        return $validite;
+    }
+
+
+    //###########################################################################################################################
     //                      Méthode GET - Récupération des données des matchs
     //###########################################################################################################################
 
@@ -119,11 +173,41 @@
     //###########################################################################################################################
 
     //Modifie un match avec sont id et tous les paramètres necessaires (date, heure, equipe adverse, domicile, resultat)
-    function updateMatch($linkpdo, $idMatch, $date, $heure, $equipeadv, $domicile, $resultat){
+    function updateMatch($linkpdo, $idMatch, $date, $heure, $equipeadv, $domicile, $score){
         $requete = $linkpdo->prepare('UPDATE matchs SET Date_heure_match = :date_time, Nom_equipe_adverse = :equipeadv, Rencontre_domicile = :domicile , Resultat = :resultat WHERE id_match = :id');
-        $date_time = ($date.' '.$heure.':00');
+        
+        //Transformation de dd-mm-yyyy en yyyy-mm-dd
+        $date_explode = explode('-', $date);
+        $date_dateTime= $date_explode[2] . '-' . $date_explode[1] . '-' . $date_explode[0];
+        $date_time = ($date_dateTime.' '.$heure.':00');
+
         $requete->execute(array('date_time'=>$date_time,'equipeadv'=>$equipeadv,
-        'domicile'=>$domicile, 'id'=>$idMatch, 'resultat'=>$resultat));
+        'domicile'=>$domicile, 'id'=>$idMatch, 'resultat'=>$score));
+        updateScore($linkpdo,$idMatch,$score);
+    }
+
+    //Fonction qui met automatiquement le résultat à 1 ou 0 en fonction de notre score
+    function updateScore($linkpdo, $idMatch, $score){
+        $requete = $linkpdo->prepare('UPDATE matchs SET Score = :score , Resultat = :resultat WHERE id_match = :id');
+        
+        $sets = explode(',', $score);
+        $sets_gagnes = 0;
+        
+        // Compter les sets gagnés
+        foreach ($sets as $set) {
+            $scores_set = explode('-', trim($set));
+            if (count($scores_set) == 2) {
+                //Etant toujours à droite dans le score, nous pouvons validé comme ceci
+                if ($scores_set[0] > $scores_set[1]) {
+                    $sets_gagnes++;
+                }
+            }
+        }
+        
+        // Déterminer si le match est gagné (3 sets ou plus)
+        $resultat = ($sets_gagnes >= 3) ? 1 : 0;
+        
+        $requete->execute(array('score'=>$score, 'id'=>$idMatch, 'resultat'=>$resultat));
     }
 
     //###########################################################################################################################
@@ -146,57 +230,19 @@
         'domicile'=>$domicile));
     }
 
-    function updateScore($linkpdo, $idMatch, $score){
-        $requete = $linkpdo->prepare('UPDATE matchs SET Score = :score , Resultat = :resultat WHERE id_match = :id');
-        
-        $sets = explode(',', $score);
-        $sets_gagnes = 0;
-        
-        // Compter les sets gagnés
-        foreach ($sets as $set) {
-            $scores_set = explode('-', trim($set));
-            if (count($scores_set) === 2) {
-                if (intval($scores_set[0]) > intval($scores_set[1])) {
-                    $sets_gagnes++;
-                }
-            }
-        }
-        
-        // Déterminer si le match est gagné (3 sets ou plus)
-        $resultat = ($sets_gagnes >= 3) ? 1 : 0;
-        
-        $requete->execute(array('score'=>$score, 'id'=>$idMatch, 'resultat'=>$resultat));
-    }
-
     //###########################################################################################################################
     //                      Méthode DELETE - Suppresion d'un match
     //###########################################################################################################################
 
-    //Renvoie true si le match a déjà été joué (date dépassée)
-    //Renvoie false sinon
-    function isMatchJouer($linkpdo, $idMatch){
-        //Date actuelle sous forme de tableau
-        $date_array = getdate();
-
-        //Récupération des bonnes informations de la date actuelle
-        $date_actu = $date_array['mday']."-".$date_array['mon']."-".$date_array['year'];
-
-        //Récupération de la date et de l'heure du match
-        $date_heure_match = getDateMatch($linkpdo, $idMatch);
-
-        //Comparaison des dates
-        return $date_actu > $date_heure_match;
-    }
-
     //Renvoie true si le match a une feuille de match associée
     //Renvoie false sinon
     function aUneFeuilleDeMatch($linkpdo,$idMatch){
-        $feuilleMatchRequete = $linkpdo->prepare('SELECT count(*) FROM participer WHERE id_match=:idMatch');
+        $feuilleMatchRequete = $linkpdo->prepare('SELECT count(*) as nb FROM participer WHERE idMatch=:idMatch');
         $feuilleMatchRequete->execute([
             'idMatch' => $idMatch
         ]);
         $resultat = $feuilleMatchRequete->fetch(PDO::FETCH_ASSOC);
-        return $resultat['count']>0;
+        return $resultat['nb']>0;
     }
     
     //Permet de supprimer un match ne disposant pas de feuille de match et n'ayant pas dépassé sa date
