@@ -36,51 +36,70 @@
                 }
                 break;
             case "POST" :
+                //Récupère les données envoyées par le client
                 $postedData = file_get_contents('php://input');
                 $data = json_decode($postedData,true);
+                //Vérifie si les données requises sont présentes
                 if(isset($data['date']) && isset($data['heure']) && isset($data['equipeadv']) && isset($data['domicile'])){
                     if ($data['domicile']==1 || $data['domicile']==0){
+                        //Vérifie si la date et l'heure sont valides
                         if(date_valide($data['date']) && heure_valide($data['heure'])){
                             ajouterMatch($linkpdo, $data['date'], $data['heure'], $data['equipeadv'], $data['domicile']);
                             deliver_response(201, "Match ajouté avec succès");
                         } else {
+                            //Si la date ou l'heure ne sont pas valides, on renvoie un message d'erreur
                             deliver_response(400,"La date et l'heure doivent avoir respectivement le format jj/mm/yyyy et hh:mm");
                         }
                     } else {
+                        //Si le lieu du match n'est pas 1 ou 0, on renvoie un message d'erreur
                         deliver_response(400, "Le domicile doit avoir une valeur de 1 ou 0, (1=A domicile, 0=Chez l'adversaire)");
-                    }                  
+                    }
                 } else {
+                    //Si les toutes données requises ne sont pas présentes, on renvoie un message d'erreur
                     deliver_response(400, "La date, l'heure, l'équipe adverse et le lieu du match sont requis");
                 }
                 break;
             case "PUT" :
+                //Récupère les données envoyées par le client
                 $postedData = file_get_contents('php://input');
                 $data = json_decode($postedData,true);
+                //Vérifie si les données requises sont présentes
                 if(isset($data['id']) && isset($data['date']) && isset($data['heure']) && isset($data['equipeadv']) && isset($data['domicile']) && isset($data['score'])){
+                    //Vérifie si l'ID envoyée correspond à un match existant
                     if(!empty(getOneMatch($linkpdo,$data['id']))){
+                        //Vérifie si le lieu du match est valide
                         if ($data['domicile']==1 || $data['domicile']==0){
+                            //Vérifie si la date et l'heure sont valides
                             if(date_valide($data['date']) && heure_valide($data['heure'])){
+                                //Vérifie que le nombre de set est entre 3 et 5
                                 if(getNbSetValide($data['score'])){
+                                    //Vérifie si le score est valide en fonction des règles officielles du volley-ball
                                     $message=getScoreValide($data['score']);
                                     if($message=="Ok"){
                                         updateMatch($linkpdo, $data['id'], $data['date'], $data['heure'], $data['equipeadv'], $data['domicile'], $data['score']);
                                         deliver_response(200, "Match modifié avec succès");
                                     } else { 
+                                        //Si le score n'est pas valide, on renvoie un message d'erreur adapté
                                         deliver_response(400,$message);
                                     }
                                 } else {
+                                    //Si le nombre de set n'est pas valide, on renvoie un message d'erreur
                                     deliver_response(400,"Le nombre de set doit être compris entre 3 et 5");
                                 }
                             } else {
+                                //Si la date ou l'heure ne sont pas valides, on renvoie un message d'erreur
                                 deliver_response(400,"La date et l'heure doivent avoir respectivement le format jj/mm/yyyy et hh:mm");
                             }
                         } else {
+                            //Si le lieu du match n'est pas 1 ou 0, on renvoie un message d'erreur
                             deliver_response(400, "Le domicile doit avoir une valeur de 1 ou 0, (1=A domicile, 0=Chez l'adversaire)");
-                        }                  
+                        }
                     } else {
+                        //Si l'ID ne correspond à aucun match, on renvoie un message d'erreur
                         deliver_response(404,"L'id rentré ne correspond à aucun match");
                     }
                 } else {
+                    //Si les toutes données requises ne sont pas présentes, on renvoie un message d'erreur
                     deliver_response(400, "L'id, la date, l'heure, l'équipe adverse, le lieu du match et le score sont requis");
                 }
                 break;
