@@ -88,18 +88,26 @@
             case "DELETE":
                 $postedData = file_get_contents('php://input');
                 $data = json_decode($postedData,true);
+                //Vérifie si l'id est spécifié dans le body ou non
                 if ($data['id']){   
+                    //Vérifie si le match existe
                     if (!empty(getOneMatch($linkpdo, $data['id']))){
+                        //Vérifie si le match a déjà été joué (possède une feuille de match)
                         if (!aUneFeuilleDeMatch($linkpdo,$data["id"])){
+                            //Si tout est vérifier, alors on supprime le match
                             supprimerUnMatch($linkpdo,$data["id"]);
                             deliver_response(200,"Le match a bien été supprimé");
                         } else {
+                            //Si le match est déjà joué, on revoit l'erreur 403
+                            //Cela permet de dire que le serveur comprend mais n'éxecute pas le code pour certaines raisons
                             deliver_response(403,"Le match a une feuille de match, il ne peut pas être supprimé");
                         }
                     } else {
+                        //Si le match n'est pas trouvé, on renvoit l'erreur 404
                         deliver_response(404,"L'id doit correspondre à un match existant");
                     }
                 } else {
+                    //Si l'id n'est pas fourni c'est une "Bad request" de l'erreur 400
                     deliver_response(400,"Un id doit être fourni");
                 }
                 break;
