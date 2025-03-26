@@ -15,18 +15,22 @@ if (getJwtValid()) {
                 //Vérifie si l'ID est numérique (pas de texte)
                 if (!is_numeric($id)) {
                     deliver_response(422, "L'ID doit être numérique");
-                }
-
-                $joueurs = getJoueursSelectionnesAUnMatch($linkpdo, $id);
-                //Vérifie si la requête a bel et bien renvoyé des données
-                if (empty($joueurs)) {
-                    deliver_response(404, "Le match choisi n'a pas de feuille de match");
                 } else {
-                    deliver_response(200, "Joueurs du match selectionné récupérés avec succès", $joueurs);
-                }
+                    if (!empty(idMatchExiste($linkpdo, $id))) {
+                    $joueurs = getJoueursSelectionnesAUnMatch($linkpdo, $id);
+                    //Vérifie si la requête a bel et bien renvoyé des données
+                        if (empty($joueurs)) {
+                                deliver_response(404, "Le match choisi n'a pas de feuille de match");
+                        } else {
+                                deliver_response(200, "Joueurs du match selectionné récupérés avec succès", $joueurs);
+                        }
+                    } else {
+                        deliver_response(404, "Aucun match trouvé avec cet ID");
+                    }
+        }
             } else {
                 deliver_response(400, "Le requête GET a besoin de l'ID d'un match");
-            }
+        }
             break;
         case "POST":
             $postedData = file_get_contents('php://input');

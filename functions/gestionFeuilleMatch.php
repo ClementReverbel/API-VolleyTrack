@@ -43,6 +43,11 @@
         return '';
     }
 
+    function idMatchExiste($linkpdo, $idMatch) {
+        $requeteMatch = $linkpdo->prepare("SELECT * FROM matchs WHERE id_match = :idMatch");
+        $requeteMatch->execute([':idMatch' => $idMatch]);
+        return $requeteMatch->fetch(PDO::FETCH_ASSOC);
+    }
     //###########################################################################################################################
     //                      Méthode GET - Récupérer les joueurs d'un match donné
     //###########################################################################################################################
@@ -50,22 +55,12 @@
     function getJoueursSelectionnesAUnMatch($linkpdo,$idMatch){
         // Récupérer les joueurs déjà sélectionnés pour ce match
         $requeteJoueursSelectionnes = $linkpdo->prepare("
-            SELECT p.idJoueur, CONCAT(j.Nom, ' ', j.Prenom) AS NomComplet, 
-                j.Taille, 
-                j.Poids, 
-                (SELECT ROUND(SUM(Note)/COUNT(*), 1)
-                FROM participer 
-                WHERE participer.idJoueur = j.idJoueur
-                ) AS Moyenne_note, 
-                j.Commentaire,
-                p.Poste, 
-                p.Role_titulaire
-            FROM participer p, joueurs j
-            WHERE p.idJoueur = j.idJoueur
-            AND p.idMatch = :idMatch
+            SELECT idJoueur
+            FROM participer
+            WHERE idMatch = :idMatch
         ");
         $requeteJoueursSelectionnes->execute([':idMatch' => $idMatch]);
-        return $requeteJoueursSelectionnes->fetchAll(PDO::FETCH_ASSOC);
+        return $requeteJoueursSelectionnes->fetchAll();
     }
 
     //###########################################################################################################################
@@ -74,28 +69,32 @@
 
     //Script SQL - Insertion dans la BD de la feuille de match
     function insererFeuilleMatch($linkpdo, $idJoueurs, $roles, $idMatch) {
-        try {
-            $requete = $linkpdo->prepare("
-                INSERT INTO participer (idJoueur, idMatch, Role_titulaire, Poste)
-                VALUES (:idJoueur, :idMatch, :Role_titulaire, :Poste)
-            ");
-            //Pour chaque joueur, je vérifie si il est titulaire
-            for($i = 0; $i < sizeof($idJoueurs); $i++) {
-                $idJoueur = $idJoueurs[$i];
-                $role = $roles[$i];
-                $roleTitulaire = ($role != 5);
+            $checkEmpty = $linkpdo->prepare("SELECT idMatch FROM participer WHERE idMatch = :idMatch");
+            $checkEmpty->execute([':idMatch' => $idMatch]);
+            $empty = $checkEmpty->fetchAll(PDO::FETCH_ASSOC);
+            //Si la feuille de match existe déjà, on ne peut pas la créer
+            if(empty($empty)){
+                $requete = $linkpdo->prepare("
+                    INSERT INTO participer (idJoueur, idMatch, Role_titulaire, Poste)
+                    VALUES (:idJoueur, :idMatch, :Role_titulaire, :Poste)
+                ");
+                //Pour chaque joueur, je vérifie si il est titulaire
+                for($i = 0; $i < sizeof($idJoueurs); $i++) {
+                    $idJoueur = $idJoueurs[$i];
+                    $role = $roles[$i];
+                    $roleTitulaire = ($role != 5);
 
-                $requete->execute([
-                    ':idJoueur' => $idJoueur,
-                    ':idMatch' => $idMatch,
-                    ':Role_titulaire' => $roleTitulaire,
-                    ':Poste' => $role
-                ]);
+                    $requete->execute([
+                        ':idJoueur' => $idJoueur,
+                        ':idMatch' => $idMatch,
+                        ':Role_titulaire' => $roleTitulaire,
+                        ':Poste' => $role
+                    ]);
+                }
+                return true;
+            } else {
+                return "Erreur, une feuille de match existe déjà pour ce match";
             }
-            return true;
-        } catch (Exception $e) {
-            return "Erreur lors de l'enregistrement : " . $e->getMessage();
-        }
     }
 
     //Fonction a appeler pour ajouter une feuille de matchs avec des joueurs et roles donnés
@@ -120,7 +119,7 @@
             if ($resultat === true) {
                 $message = "Sélection des joueurs enregistrée avec succès pour le match du ". $dateHeureMatch['Date_heure_match'].".";
             } else {
-                $message = "Erreur lors de l'enregistrement" ;
+                $message = $resultat;
             }
         }
 
