@@ -156,6 +156,10 @@
                     deliver_response(400, "Le numéro de licence est requis pour supprimer un joueur");
                 }
                 break;
+            //Methode a implémenter pour les CORS
+            case "OPTIONS":
+                deliver_response(200,"Prerequest validée");
+                break;
         }
     } else {
          // Réponse en cas d'échec de l'authentification

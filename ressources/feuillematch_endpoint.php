@@ -74,6 +74,10 @@ if (getJwtValid()) {
         case "DELETE":
             deliver_response(405, "Méthode non implémentée, il est impossible de supprimer une feuille de match");
             break;
+        //Methode a implémenter pour les CORS
+        case "OPTIONS":
+            deliver_response(200,"Prerequest validée");
+            break;
     }
 } else {
     deliver_response(401, "Veuillez vous connecter pour accéder à l'application");
