@@ -15,7 +15,7 @@
                     $id = $_GET['id'];
                     //Vérifie si l'ID est numérique (pas de texte)
                     if (!is_numeric($id)){
-                        deliver_response(422, "L'ID doit être numérique");
+                        deliver_response(403, "L'ID doit être numérique");
                     } else {
                         $match = getOneMatch($linkpdo, $id);
                         //On vérifie s'il y a des données dans la réponse de la fonction

@@ -14,7 +14,7 @@ if (getJwtValid()) {
                 $id = $_GET['id'];
                 //Vérifie si l'ID est numérique (pas de texte)
                 if (!is_numeric($id)) {
-                    deliver_response(422, "L'ID doit être numérique");
+                    deliver_response(403, "L'ID doit être numérique");
                 } else {
                     if (!empty(idMatchExiste($linkpdo, $id))) {
                     $joueurs = getJoueursSelectionnesAUnMatch($linkpdo, $id);

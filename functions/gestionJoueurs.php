@@ -6,7 +6,7 @@
     function getJoueurActif($linkpdo){
         // Récupération de la liste des joueurs actifs
         $requeteJoueurs = $linkpdo->prepare("
-            SELECT idJoueur, CONCAT(Nom, ' ', Prenom) AS NomComplet, 
+            SELECT idJoueur, Numéro_de_licence, CONCAT(Nom, ' ', Prenom) AS NomComplet, 
                 Taille, 
                 Poids, 
                 (SELECT ROUND(SUM(Note)/COUNT(*), 1)
@@ -24,7 +24,7 @@
     function getAllJoueur($linkpdo){
         // Récupération de la liste des joueurs actifs
         $requeteJoueurs = $linkpdo->prepare("
-            SELECT idJoueur, CONCAT(Nom, ' ', Prenom) AS NomComplet, 
+            SELECT idJoueur, Numéro_de_licence, CONCAT(Nom, ' ', Prenom) AS NomComplet, 
                 Taille, 
                 Poids, 
                 (SELECT ROUND(SUM(Note)/COUNT(*), 1)
@@ -40,7 +40,16 @@
 
     //Récupère un joueur avec son numéro de licence
     function getJoueur($linkpdo, $numLic){
-        $requete = $linkpdo->prepare('SELECT * FROM joueurs WHERE Numéro_de_licence = :num');
+        $requete = $linkpdo->prepare("SELECT idJoueur, Numéro_de_licence, CONCAT(Nom, ' ', Prenom) AS NomComplet, 
+                Taille, 
+                Poids, 
+                (SELECT ROUND(SUM(Note)/COUNT(*), 1)
+                FROM participer 
+                WHERE participer.idJoueur = j.idJoueur
+                ) AS Moyenne_note, 
+                Commentaire 
+            FROM joueurs j
+            WHERE Numéro_de_licence = :num");
         $requete->execute(array('num' => $numLic));
         return $requete->fetchAll(PDO::FETCH_ASSOC);
     }

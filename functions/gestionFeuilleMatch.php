@@ -67,7 +67,7 @@
     function getJoueursSelectionnesAUnMatch($linkpdo,$idMatch){
         // Récupérer les joueurs déjà sélectionnés pour ce match
         $requeteJoueursSelectionnes = $linkpdo->prepare("
-            SELECT p.idJoueur, CONCAT(j.Nom, ' ', j.Prenom) AS NomComplet, 
+            SELECT p.idJoueur, j.Numéro_de_licence, CONCAT(j.Nom, ' ', j.Prenom) AS NomComplet, 
                 j.Taille, 
                 j.Poids, 
                 (SELECT ROUND(SUM(Note)/COUNT(*), 1)
