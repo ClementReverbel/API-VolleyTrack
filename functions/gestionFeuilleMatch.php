@@ -43,10 +43,22 @@
         return '';
     }
 
+    //Savoir si un match dispose déjà d'une feuille de match
     function idMatchExiste($linkpdo, $idMatch) {
         $requeteMatch = $linkpdo->prepare("SELECT * FROM matchs WHERE id_match = :idMatch");
         $requeteMatch->execute([':idMatch' => $idMatch]);
         return $requeteMatch->fetch(PDO::FETCH_ASSOC);
+    }
+
+    //Vérifie si les rôles donnés sont valides
+    function verificationRole($roles){
+        $rolevalide=["Atttaquant","Passeur","Centre","Libero","Remplaçant"];
+        foreach($roles as $role){
+            if(!in_array($role,$rolevalide)){
+                return "Erreur, les rôles doivent avoir la syntaxe : Atttaquant, Passeur, Centre, Libero, Remplaçant";
+            }
+        }
+        return '';
     }
     //###########################################################################################################################
     //                      Méthode GET - Récupérer les joueurs d'un match donné
@@ -122,6 +134,10 @@
         if (empty($message)) {
             $message = verifierJoueursActifs($joueurs, $joueursActif);
         }
+        
+        if (empty($message)){
+            $message = verificationRole($listerole);
+        }
 
         // Si tout est valide, insérer dans la base de données
         if (empty($message)) {
@@ -182,7 +198,7 @@
             for($i = 0; $i < sizeof($joueurs); $i++) {
                 $idJoueur = $joueurs[$i];
                 $role = $roles[$i];
-                $roleTitulaire = ($role != 5);
+                $roleTitulaire = ($role != "Remplaçant");
 
                 $existe=false;
 
@@ -241,6 +257,10 @@
         
         if (empty($message)) {
             $message = verifierJoueursActifs($joueurs, $joueursActif);
+        }
+
+        if (empty($message)){
+            $message = verificationRole($listerole);
         }
 
        $joueursAvantModif= getJoueursSelectionnesAUnMatch($linkpdo,$idMatch);  
