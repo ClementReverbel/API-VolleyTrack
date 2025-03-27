@@ -83,3 +83,4 @@ if (getJwtValid()) {
     deliver_response(401, "Veuillez vous connecter pour accéder à l'application");
 }
 $linkpdo = null;
+?>

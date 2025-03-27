@@ -55,9 +55,19 @@
     function getJoueursSelectionnesAUnMatch($linkpdo,$idMatch){
         // Récupérer les joueurs déjà sélectionnés pour ce match
         $requeteJoueursSelectionnes = $linkpdo->prepare("
-            SELECT idJoueur
-            FROM participer
-            WHERE idMatch = :idMatch
+            SELECT p.idJoueur, CONCAT(j.Nom, ' ', j.Prenom) AS NomComplet, 
+                j.Taille, 
+                j.Poids, 
+                (SELECT ROUND(SUM(Note)/COUNT(*), 1)
+                FROM participer 
+                WHERE participer.idJoueur = j.idJoueur
+                ) AS Moyenne_note, 
+                j.Commentaire,
+                p.Poste, 
+                p.Role_titulaire
+            FROM participer p, joueurs j
+            WHERE p.idJoueur = j.idJoueur
+            AND p.idMatch = :idMatch
         ");
         $requeteJoueursSelectionnes->execute([':idMatch' => $idMatch]);
         return $requeteJoueursSelectionnes->fetchAll();
@@ -155,8 +165,9 @@
     function miseAJourFeuilleMatch($linkpdo, $idMatch, $joueurs, $roles, $notes,$joueursAvantModif){
         try {
             $requeteUpdate = $linkpdo->prepare("
-                UPDATE participer set idJoueur=:idJoueur, Role_titulaire=:Role_titulaire, Poste=:Poste, Note=:Note)
+                UPDATE participer set Role_titulaire=:Role_titulaire, Poste=:Poste, Note=:Note
                 WHERE idMatch=:idMatch
+                AND idJoueur=:idJoueur
             ");
 
             $requeteInsert = $linkpdo->prepare("
@@ -173,8 +184,19 @@
                 $role = $roles[$i];
                 $roleTitulaire = ($role != 5);
 
-                //S'ils étaient déjà dans la table, on les update
-                if(in_array($joueurs[$i],$joueursAvantModif)){
+                $existe=false;
+
+                foreach($joueursAvantModif as $ancienJoueur){
+                    //Et on vérifie s'ils sont dans la nouvelle liste
+                    $idJoueurAncien = $ancienJoueur['idJoueur'];
+                    if($idJoueurAncien==$idJoueur){
+                        $existe=true;
+                        break;
+                    }
+                }
+
+                if($existe){
+                     //S'ils étaient déjà dans la table, on les update
                     $requeteUpdate->execute([
                         ':idJoueur' => $idJoueur,
                         ':idMatch' => $idMatch,
