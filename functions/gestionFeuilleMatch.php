@@ -82,7 +82,7 @@
             AND p.idMatch = :idMatch
         ");
         $requeteJoueursSelectionnes->execute([':idMatch' => $idMatch]);
-        return $requeteJoueursSelectionnes->fetchAll();
+        return $requeteJoueursSelectionnes->fetchAll(PDO::FETCH_ASSOC);
     }
 
     //###########################################################################################################################

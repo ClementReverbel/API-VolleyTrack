@@ -45,7 +45,7 @@ if (getJwtValid()) {
                         deliver_response(400, $response);
                     }
                 } else {
-                    deliver_response(200, $response);
+                    deliver_response(201, $response);
                 }
             } else {
                 deliver_response(400, "L'id du match, la liste des id des jouers, la liste des roles sont requis");
