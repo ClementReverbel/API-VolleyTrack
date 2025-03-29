@@ -44,6 +44,7 @@
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 "Authorization: Bearer ".$jeton
             ));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);  // Pour ne pas afficher la réponse directement
             curl_exec($ch);
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             return $http_code==200;
