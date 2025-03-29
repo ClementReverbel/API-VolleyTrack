@@ -72,9 +72,13 @@ Dépôt GitHub - API d’Authentification : https://github.com/ClementReverbel/A
 
 Dépôt GitHub - API VolleyTrack : https://github.com/ClementReverbel/API-VolleyTrack
 
-Endpoint Authentification : https://authapi.alwaysdata.net
+Dépôt Github - Client utilisateur des API : https://github.com/ClementReverbel/Client-API-VolleyTrack
 
-Endpoint Gestion d’équipe : https://volleyapi.alwaysdata.net/ressources
+Lien vers l'API d'authentification : https://authapi.alwaysdata.net
+
+Lien vers l'API VolleyTrack: https://volleyapi.alwaysdata.net/ressources
+
+Lien vers le client: https://volleytrackclient.alwaysdata.net/
 
 ---
 
