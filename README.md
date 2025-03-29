@@ -78,4 +78,4 @@ Endpoint Gestion d’équipe : https://volleyapi.alwaysdata.net/ressources
 
 ---
 
-### Projet réalisé par REVERBEL Clément et REYNIER Zyad – Groupe B6, Mars 2025.
+### Projet réalisé par REVERBEL Clément et REYNIER Zyad – Mars 2025.
