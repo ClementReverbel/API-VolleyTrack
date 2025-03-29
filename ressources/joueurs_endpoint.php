@@ -5,6 +5,13 @@
     include '../functions/verificationJWT.php';
     include '../functions/date_verifier.php';
     // Vérification de l'authentification
+
+    //Méthode à implémenter  pour le CORS ET avant la vérification JWT qui bloque tout
+    if($_SERVER['REQUEST_METHOD']=="OPTIONS"){
+        deliver_response(200,"Prerequest validée");
+        exit();
+    }
+
     if(getJwtValid()){
         // Connexion à la base de données
         $linkpdo = connexion_db();
@@ -155,10 +162,6 @@
                     //Si le numéro de licence n'est pas présent, on renvoie une erreur
                     deliver_response(400, "Le numéro de licence est requis pour supprimer un joueur");
                 }
-                break;
-            //Methode a implémenter pour les CORS
-            case "OPTIONS":
-                deliver_response(200,"Prerequest validée");
                 break;
         }
     } else {

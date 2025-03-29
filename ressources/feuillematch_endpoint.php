@@ -5,6 +5,12 @@ include 'deliver_response.php';
 include '../functions/connexion_db.php';
 include '../functions/verificationJWT.php';
 
+//Méthode à implémenter  pour le CORS ET avant la vérification JWT qui bloque tout
+if($_SERVER['REQUEST_METHOD']=="OPTIONS"){
+    deliver_response(200,"Prerequest validée");
+    exit();
+}
+
 if (getJwtValid()) {
     $linkpdo = connexion_db();
     $http_method = $_SERVER['REQUEST_METHOD'];
@@ -74,10 +80,7 @@ if (getJwtValid()) {
         case "DELETE":
             deliver_response(405, "Méthode non implémentée, il est impossible de supprimer une feuille de match");
             break;
-        //Methode a implémenter pour les CORS
-        case "OPTIONS":
-            deliver_response(200,"Prerequest validée");
-            break;
+
     }
 } else {
     deliver_response(401, "Veuillez vous connecter pour accéder à l'application");

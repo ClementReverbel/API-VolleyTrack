@@ -5,6 +5,12 @@
     include '../functions/connexion_db.php';
     include '../functions/verificationJWT.php';
 
+    //Méthode à implémenter  pour le CORS ET avant la vérification JWT qui bloque tout
+    if($_SERVER['REQUEST_METHOD']=="OPTIONS"){
+        deliver_response(200,"Prerequest validée");
+        exit();
+    }
+
     // Vérification de l'authentification
     if(getJwtValid()){
         $linkpdo = connexion_db();
@@ -131,9 +137,6 @@
                 }
                 break;
             //Methode a implémenter pour les CORS
-            case "OPTIONS":
-                deliver_response(200,"Prerequest validée");
-                break;
         }
     } else {
         // Réponse en cas d'échec de l'authentification

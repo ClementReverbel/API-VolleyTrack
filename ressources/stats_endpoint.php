@@ -3,6 +3,12 @@
     include 'deliver_response.php';
     include '../functions/connexion_db.php';
     include '../functions/verificationJWT.php';
+    
+    //Méthode à implémenter  pour le CORS ET avant la vérification JWT qui bloque tout
+    if($_SERVER['REQUEST_METHOD']=="OPTIONS"){
+        deliver_response(200,"Prerequest validée");
+        exit();
+    }
 
     // Vérification de l'authentification
     if(getJwtValid()){
@@ -22,10 +28,6 @@
                     //Si aucune statistique n'est demandée, on renvoie une erreur
                     deliver_response(400, "Veuillez spécifier le type de statistique à récupérer (stats_joueur ou stats_match)");
                 }
-                break;
-            //Methode a implémenter pour les CORS
-            case "OPTIONS":
-                deliver_response(200,"Prerequest validée");
                 break;
             //Renvoie un code d'erreur correct pour les mauvaises requêtes et pas seulement une erreur serveur
             default:
